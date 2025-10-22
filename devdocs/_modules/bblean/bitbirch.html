@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=684dd71f"></script>
+    <script src="../../_static/documentation_options.js?v=d6ef34e4"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
@@ -1386,6 +1386,7 @@
         <span class="n">shuffle</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">stop_early</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tpx</span><span class="o">.</span><span class="n">Self</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Refine singleton clusters by re-inserting them into the tree</span>
 
@@ -1417,9 +1418,12 @@
 
             <span class="c1"># Count the number of clusters and singletons</span>
             <span class="n">singleton_bfs</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">bf</span> <span class="ow">in</span> <span class="n">bfs</span> <span class="k">if</span> <span class="n">bf</span><span class="o">.</span><span class="n">n_samples</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">singleton_bfs</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">singleton_bfs</span> <span class="o">==</span> <span class="n">singletons_before</span><span class="p">:</span>
-                <span class="c1"># No more singletons to refine</span>
-                <span class="k">break</span>
+
+            <span class="c1"># Check stopping criteria</span>
+            <span class="k">if</span> <span class="n">stop_early</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">singleton_bfs</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">singleton_bfs</span> <span class="o">==</span> <span class="n">singletons_before</span><span class="p">:</span>
+                    <span class="c1"># No more singletons to refine</span>
+                    <span class="k">break</span>
             <span class="n">singletons_before</span> <span class="o">=</span> <span class="n">singleton_bfs</span>
 
             <span class="c1"># Print progress</span>
