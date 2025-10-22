@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=75f29710"></script>
+    <script src="../../_static/documentation_options.js?v=48da9ace"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
@@ -579,6 +579,7 @@
     <span class="k">return</span> <span class="n">_jt_sim_packed_precalc_cardinalities</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">vec</span><span class="p">,</span> <span class="n">_popcount</span><span class="p">(</span><span class="n">arr</span><span class="p">))</span></div>
 
 
+
 <span class="k">def</span><span class="w"> </span><span class="nf">jt_sim_matrix_packed</span><span class="p">(</span>
     <span class="n">arr</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
@@ -591,6 +592,7 @@
             <span class="c1"># Set the similarities for each column (symmetric)</span>
             <span class="n">matrix</span><span class="p">[</span><span class="n">j</span><span class="p">:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">:]</span>
     <span class="k">return</span> <span class="n">matrix</span>
+
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_jt_sim_packed_precalc_cardinalities</span><span class="p">(</span>
     <span class="n">arr</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">],</span>
