@@ -255,6 +255,10 @@ def estimate_jt_std(
 ) -> float:
     r"""Estimate std of tanimoto sim using a deterministic sample"""
     num_fps = len(fps)
+    if num_fps > 1_000_000:
+        np.random.shuffle(fps)
+        fps = fps[:1_000_000]
+        num_fps = len(fps)
     if n_samples is None:
         n_samples = max(num_fps // 1000, 50)
     sample_idxs = jt_stratified_sampling(fps, n_samples, input_is_packed, n_features)
