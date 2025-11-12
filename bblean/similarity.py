@@ -256,6 +256,7 @@ def estimate_jt_std(
     r"""Estimate std of tanimoto sim using a deterministic sample"""
     num_fps = len(fps)
     if num_fps > 1_000_000:
+        np.random.seed(42)
         np.random.shuffle(fps)
         fps = fps[:1_000_000]
         num_fps = len(fps)
