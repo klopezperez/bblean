@@ -257,23 +257,23 @@ def estimate_jt_std(
     num_fps = len(fps)
     if num_fps > 1_000_000:
         np.random.seed(42)
-        np.random.shuffle(fps)
-        fps = fps[:1_000_000]
-        num_fps = len(fps)
+        fps_ = np.random.choice(num_fps, size=1_000_000, replace=False)
+        fps_ = fps[fps_]
+        num_fps = len(fps_)
     if n_samples is None:
         n_samples = max(num_fps // 1000, 50)
-    sample_idxs = jt_stratified_sampling(fps, n_samples, input_is_packed, n_features)
-
-    # Work with sample from now on
-    fps = fps[sample_idxs]
-    num_fps = len(fps)
+    sample_idxs = jt_stratified_sampling(fps_, n_samples, input_is_packed, n_features)
+    
+    # Work with only the sampled fingerprints
+    fps_ = fps_[sample_idxs]
+    num_fps = len(fps_)
     pairs = np.empty(num_fps * (num_fps - 1) // 2, dtype=np.float64)
     # NOTE: Calc upper triangular part of pairwise matrix only, slightly more efficient,
     # but difference is negligible in tests
     offset = 0
-    for i in range(len(fps)):
+    for i in range(len(fps_)):
         num = num_fps - i - 1
-        pairs[offset : offset + num] = jt_sim_packed(fps[i], fps[i + 1 :])
+        pairs[offset : offset + num] = jt_sim_packed(fps_[i], fps_[i + 1 :])
         offset += num
     return np.std(pairs).item()
 
