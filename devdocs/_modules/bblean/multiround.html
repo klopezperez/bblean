@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../_static/documentation_options.js?v=353894ee"></script>
+    <script src="../../_static/documentation_options.js?v=073d8f15"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
@@ -550,6 +550,7 @@
             <span class="n">threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="p">,</span>
             <span class="n">merge_criterion</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">merge_criterion</span><span class="p">,</span>
         <span class="p">)</span>
+
         <span class="n">range_</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">start_idx</span><span class="p">,</span> <span class="n">end_idx</span><span class="p">)</span>
         <span class="n">tree</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
             <span class="n">fp_file</span><span class="p">,</span>
@@ -569,7 +570,7 @@
                 <span class="c1"># Finish the first refinement step internally in this round</span>
                 <span class="n">tree</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
                 <span class="n">tree</span><span class="o">.</span><span class="n">set_merge</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">refine_merge_criterion</span><span class="p">,</span>
+                    <span class="n">merge_criterion</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">refine_merge_criterion</span><span class="p">,</span>
                     <span class="n">tolerance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span><span class="p">,</span>
                     <span class="n">threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">threshold</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">refine_threshold_change</span><span class="p">,</span>
                 <span class="p">)</span>
@@ -593,7 +594,7 @@
         <span class="n">round_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">out_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">split_largest_cluster</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-        <span class="n">criterion</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">merge_criterion</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">all_fp_paths</span><span class="p">:</span> <span class="n">tp</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">all_fp_paths</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">all_fp_paths</span><span class="p">)</span>
@@ -603,14 +604,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">round_idx</span> <span class="o">=</span> <span class="n">round_idx</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">out_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">out_dir</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">split_largest_cluster</span> <span class="o">=</span> <span class="n">split_largest_cluster</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">=</span> <span class="n">criterion</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">merge_criterion</span> <span class="o">=</span> <span class="n">merge_criterion</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_info</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">tp</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="n">Path</span><span class="p">]]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">batch_label</span><span class="p">,</span> <span class="n">batch_path_pairs</span> <span class="o">=</span> <span class="n">batch_info</span>
         <span class="n">tree</span> <span class="o">=</span> <span class="n">BitBirch</span><span class="p">(</span>
             <span class="n">branching_factor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">branching_factor</span><span class="p">,</span>
             <span class="n">threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="p">,</span>
-            <span class="n">merge_criterion</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">,</span>
+            <span class="n">merge_criterion</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">merge_criterion</span><span class="p">,</span>
             <span class="n">tolerance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="c1"># Rebuild a tree, inserting all BitFeatures from the corresponding batch</span>
@@ -638,13 +639,20 @@
         <span class="n">branching_factor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">criterion</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">merge_criterion</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">out_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">save_tree</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
         <span class="n">save_centroids</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">branching_factor</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">out_dir</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="p">()</span>
+            <span class="n">branching_factor</span><span class="p">,</span>
+            <span class="n">threshold</span><span class="p">,</span>
+            <span class="n">tolerance</span><span class="p">,</span>
+            <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">out_dir</span><span class="p">,</span>
+            <span class="kc">False</span><span class="p">,</span>
+            <span class="n">merge_criterion</span><span class="p">,</span>
+            <span class="p">(),</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">save_tree</span> <span class="o">=</span> <span class="n">save_tree</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">save_centroids</span> <span class="o">=</span> <span class="n">save_centroids</span>
@@ -654,7 +662,7 @@
         <span class="n">tree</span> <span class="o">=</span> <span class="n">BitBirch</span><span class="p">(</span>
             <span class="n">branching_factor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">branching_factor</span><span class="p">,</span>
             <span class="n">threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="p">,</span>
-            <span class="n">merge_criterion</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">,</span>
+            <span class="n">merge_criterion</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">merge_criterion</span><span class="p">,</span>
             <span class="n">tolerance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="c1"># Rebuild a tree, inserting all BitFeatures from the corresponding batch</span>
@@ -667,7 +675,7 @@
         <span class="c1"># Save clusters and exit</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_tree</span><span class="p">:</span>
             <span class="c1"># TODO: Find alternative solution</span>
-            <span class="n">tree</span><span class="o">.</span><span class="n">save_pickle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_dir</span> <span class="o">/</span> <span class="s2">&quot;bitbirch.pkl&quot;</span><span class="p">)</span>
+            <span class="n">tree</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_dir</span> <span class="o">/</span> <span class="s2">&quot;bitbirch.pkl&quot;</span><span class="p">)</span>
         <span class="n">tree</span><span class="o">.</span><span class="n">delete_internal_nodes</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_centroids</span><span class="p">:</span>
             <span class="n">output</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">get_centroids_mol_ids</span><span class="p">()</span>
@@ -806,7 +814,7 @@
             <span class="n">round_idx</span><span class="o">=</span><span class="n">round_idx</span><span class="p">,</span>
             <span class="n">all_fp_paths</span><span class="o">=</span><span class="n">input_files</span><span class="p">,</span>
             <span class="n">split_largest_cluster</span><span class="o">=</span><span class="n">split_largest_after_each_midsection_round</span><span class="p">,</span>
-            <span class="n">criterion</span><span class="o">=</span><span class="n">midsection_merge_criterion</span><span class="p">,</span>
+            <span class="n">merge_criterion</span><span class="o">=</span><span class="n">midsection_merge_criterion</span><span class="p">,</span>
             <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span> <span class="o">+</span> <span class="n">midsection_threshold_change</span><span class="p">,</span>
             <span class="o">**</span><span class="n">common_kwargs</span><span class="p">,</span>
         <span class="p">)</span>
@@ -834,7 +842,7 @@
     <span class="n">final_fn</span> <span class="o">=</span> <span class="n">_FinalTreeMergingRound</span><span class="p">(</span>
         <span class="n">save_tree</span><span class="o">=</span><span class="n">save_tree</span><span class="p">,</span>
         <span class="n">save_centroids</span><span class="o">=</span><span class="n">save_centroids</span><span class="p">,</span>
-        <span class="n">criterion</span><span class="o">=</span><span class="n">final_merge_criterion</span><span class="p">,</span>
+        <span class="n">merge_criterion</span><span class="o">=</span><span class="n">final_merge_criterion</span><span class="p">,</span>
         <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span> <span class="o">+</span> <span class="n">midsection_threshold_change</span><span class="p">,</span>
         <span class="o">**</span><span class="n">common_kwargs</span><span class="p">,</span>
     <span class="p">)</span>
