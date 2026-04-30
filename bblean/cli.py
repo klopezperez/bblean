@@ -81,30 +81,16 @@ def _main(
 def _compare(
     clusters_a_path: Annotated[Path, Argument()],
     clusters_b_path: Annotated[Path, Argument()],
-    ari: Annotated[
-        bool,
-        Option("--ari/--no-ari", help="Adjusted Rand index"),
-    ] = True,
+    ari: Annotated[bool, Option("--ari/--no-ari", help="Adjusted Rand index")] = True,
     ami: Annotated[
-        bool,
-        Option("--ami/--no-ami", help="Adjusted mutual information (slow)"),
+        bool, Option("--ami/--no-ami", help="Adjusted mutual information (slow)")
     ] = True,
-    top: Annotated[
-        int,
-        Option("-t", "--top"),
-    ] = 30,
+    top: Annotated[int, Option("-t", "--top")] = 30,
     use_first_clustering_indices: Annotated[
-        bool,
-        Option("--use-first-clustering-indices/--no-use-first-clustering-indices"),
+        bool, Option("--use-first-clustering-indices/--no-use-first-clustering-indices")
     ] = False,
-    json: Annotated[
-        bool,
-        Option("-j/-J", "--json/--no-json"),
-    ] = False,
-    verbose: Annotated[
-        bool,
-        Option("-v/-V", "--verbose/--no-verbose"),
-    ] = True,
+    json: Annotated[bool, Option("-j/-J", "--json/--no-json")] = False,
+    verbose: Annotated[bool, Option("-v/-V", "--verbose/--no-verbose")] = True,
 ) -> None:
     r"""Compare two clusterings of the same data, using different metrics"""
     import pickle
@@ -183,10 +169,7 @@ def _table_summary(
             show_default=False,
         ),
     ] = None,
-    min_size: Annotated[
-        int,
-        Option("--min-size"),
-    ] = 0,
+    min_size: Annotated[int, Option("--min-size")] = 0,
     smiles_path: Annotated[
         Path | None,
         Option(
@@ -196,18 +179,11 @@ def _table_summary(
             help="Optional smiles path, if passed a scaffold analysis is performed",
         ),
     ] = None,
-    top: Annotated[
-        int,
-        Option("--top"),
-    ] = 20,
+    top: Annotated[int, Option("--top")] = 20,
     input_is_packed: Annotated[
-        bool,
-        Option("--packed-input/--unpacked-input", rich_help_panel="Advanced"),
+        bool, Option("--packed-input/--unpacked-input", rich_help_panel="Advanced")
     ] = True,
-    scaffold_fp_kind: Annotated[
-        str,
-        Option("--scaffold-fp-kind"),
-    ] = DEFAULTS.fp_kind,
+    scaffold_fp_kind: Annotated[str, Option("--scaffold-fp-kind")] = DEFAULTS.fp_kind,
     n_features: Annotated[
         int | None,
         Option(
@@ -237,17 +213,10 @@ def _table_summary(
         ),
     ] = "dunn,dbi,chi",
     metrics_top: Annotated[
-        int | None,
-        Option("--metrics-top", rich_help_panel="Advanced"),
+        int | None, Option("--metrics-top", rich_help_panel="Advanced")
     ] = 100,
-    metrics_min_size: Annotated[
-        int,
-        Option("--metrics-min-size", hidden=True),
-    ] = 1,
-    verbose: Annotated[
-        bool,
-        Option("--verbose/--no-verbose", hidden=True),
-    ] = True,
+    metrics_min_size: Annotated[int, Option("--metrics-min-size", hidden=True)] = 1,
+    verbose: Annotated[bool, Option("--verbose/--no-verbose", hidden=True)] = True,
 ) -> None:
     r"""Summary table of clustering results, together with cluster metrics"""
     from bblean._console import get_console
@@ -382,22 +351,12 @@ def _plot_isim(
             show_default=False,
         ),
     ] = None,
-    title: Annotated[
-        str | None,
-        Option("--title", help="Plot title"),
-    ] = None,
-    top: Annotated[
-        int | None,
-        Option("--top"),
-    ] = None,
+    title: Annotated[str | None, Option("--title", help="Plot title")] = None,
+    top: Annotated[int | None, Option("--top")] = None,
     input_is_packed: Annotated[
-        bool,
-        Option("--packed-input/--unpacked-input", rich_help_panel="Advanced"),
+        bool, Option("--packed-input/--unpacked-input", rich_help_panel="Advanced")
     ] = True,
-    min_size: Annotated[
-        int,
-        Option("--min-size"),
-    ] = 0,
+    min_size: Annotated[int, Option("--min-size")] = 0,
     n_features: Annotated[
         int | None,
         Option(
@@ -408,26 +367,11 @@ def _plot_isim(
             rich_help_panel="Advanced",
         ),
     ] = None,
-    save: Annotated[
-        bool,
-        Option("--save/--no-save"),
-    ] = True,
-    filename: Annotated[
-        str | None,
-        Option("--filename"),
-    ] = None,
-    verbose: Annotated[
-        bool,
-        Option("-v/-V", "--verbose/--no-verbose"),
-    ] = True,
-    show: Annotated[
-        bool,
-        Option("--show/--no-show", hidden=True),
-    ] = True,
-    threshold: Annotated[
-        float | None,
-        Option("-t", "--threshold"),
-    ] = None,
+    save: Annotated[bool, Option("--save/--no-save")] = True,
+    filename: Annotated[str | None, Option("--filename")] = None,
+    verbose: Annotated[bool, Option("-v/-V", "--verbose/--no-verbose")] = True,
+    show: Annotated[bool, Option("--show/--no-show", hidden=True)] = True,
+    threshold: Annotated[float | None, Option("-t", "--threshold")] = None,
 ) -> None:
     r"""Population plot of the clustering results"""
     from bblean._console import get_console
@@ -502,22 +446,12 @@ def _plot_pops(
             show_default=False,
         ),
     ] = None,
-    title: Annotated[
-        str | None,
-        Option("--title", help="Plot title"),
-    ] = None,
-    top: Annotated[
-        int | None,
-        Option("--top"),
-    ] = None,
+    title: Annotated[str | None, Option("--title", help="Plot title")] = None,
+    top: Annotated[int | None, Option("--top")] = None,
     input_is_packed: Annotated[
-        bool,
-        Option("--packed-input/--unpacked-input", rich_help_panel="Advanced"),
+        bool, Option("--packed-input/--unpacked-input", rich_help_panel="Advanced")
     ] = True,
-    min_size: Annotated[
-        int,
-        Option("--min-size"),
-    ] = 0,
+    min_size: Annotated[int, Option("--min-size")] = 0,
     n_features: Annotated[
         int | None,
         Option(
@@ -528,22 +462,10 @@ def _plot_pops(
             rich_help_panel="Advanced",
         ),
     ] = None,
-    save: Annotated[
-        bool,
-        Option("--save/--no-save"),
-    ] = True,
-    filename: Annotated[
-        str | None,
-        Option("--filename"),
-    ] = None,
-    verbose: Annotated[
-        bool,
-        Option("-v/-V", "--verbose/--no-verbose"),
-    ] = True,
-    show: Annotated[
-        bool,
-        Option("--show/--no-show", hidden=True),
-    ] = True,
+    save: Annotated[bool, Option("--save/--no-save")] = True,
+    filename: Annotated[str | None, Option("--filename")] = None,
+    verbose: Annotated[bool, Option("-v/-V", "--verbose/--no-verbose")] = True,
+    show: Annotated[bool, Option("--show/--no-show", hidden=True)] = True,
 ) -> None:
     r"""Population plot of the clustering results"""
     from bblean._console import get_console
@@ -586,30 +508,16 @@ def _plot_umap(
             show_default=False,
         ),
     ] = None,
-    title: Annotated[
-        str | None,
-        Option("--title", help="Plot title"),
-    ] = None,
-    save: Annotated[
-        bool,
-        Option("--save/--no-save"),
-    ] = True,
-    top: Annotated[
-        int,
-        Option("--top"),
-    ] = 20,
+    title: Annotated[str | None, Option("--title", help="Plot title")] = None,
+    save: Annotated[bool, Option("--save/--no-save")] = True,
+    top: Annotated[int, Option("--top")] = 20,
     input_is_packed: Annotated[
-        bool,
-        Option("--packed-input/--unpacked-input", rich_help_panel="Advanced"),
+        bool, Option("--packed-input/--unpacked-input", rich_help_panel="Advanced")
     ] = True,
     scaling: Annotated[
-        str,
-        Option("--scaling", rich_help_panel="Advanced"),
+        str, Option("--scaling", rich_help_panel="Advanced")
     ] = "normalize",
-    min_size: Annotated[
-        int,
-        Option("--min-size"),
-    ] = 0,
+    min_size: Annotated[int, Option("--min-size")] = 0,
     n_features: Annotated[
         int | None,
         Option(
@@ -620,38 +528,16 @@ def _plot_umap(
             rich_help_panel="Advanced",
         ),
     ] = None,
-    filename: Annotated[
-        str | None,
-        Option("--filename"),
-    ] = None,
-    verbose: Annotated[
-        bool,
-        Option("-v/-V", "--verbose/--no-verbose"),
-    ] = True,
-    show: Annotated[
-        bool,
-        Option("--show/--no-show", hidden=True),
-    ] = True,
+    filename: Annotated[str | None, Option("--filename")] = None,
+    verbose: Annotated[bool, Option("-v/-V", "--verbose/--no-verbose")] = True,
+    show: Annotated[bool, Option("--show/--no-show", hidden=True)] = True,
     deterministic: Annotated[
-        bool,
-        Option("--deterministic/--no-deterministic"),
+        bool, Option("--deterministic/--no-deterministic")
     ] = False,
-    n_neighbors: Annotated[
-        int,
-        Option("-n", "--neighbors"),
-    ] = 15,
-    min_dist: Annotated[
-        float,
-        Option("-d", "--min-dist"),
-    ] = 0.5,
-    metric: Annotated[
-        str,
-        Option("--metric"),
-    ] = "euclidean",
-    densmap: Annotated[
-        bool,
-        Option("--densmap/--no-densmap"),
-    ] = False,
+    n_neighbors: Annotated[int, Option("-n", "--neighbors")] = 15,
+    min_dist: Annotated[float, Option("-d", "--min-dist")] = 0.5,
+    metric: Annotated[str, Option("--metric")] = "euclidean",
+    densmap: Annotated[bool, Option("--densmap/--no-densmap")] = False,
     workers: Annotated[
         int | None,
         Option(
@@ -711,25 +597,14 @@ def _plot_pca(
             show_default=False,
         ),
     ] = None,
-    title: Annotated[
-        str | None,
-        Option("--title", help="Plot title"),
-    ] = None,
-    top: Annotated[
-        int,
-        Option("--top"),
-    ] = 20,
-    min_size: Annotated[
-        int,
-        Option("--min-size"),
-    ] = 0,
+    title: Annotated[str | None, Option("--title", help="Plot title")] = None,
+    top: Annotated[int, Option("--top")] = 20,
+    min_size: Annotated[int, Option("--min-size")] = 0,
     input_is_packed: Annotated[
-        bool,
-        Option("--packed-input/--unpacked-input", rich_help_panel="Advanced"),
+        bool, Option("--packed-input/--unpacked-input", rich_help_panel="Advanced")
     ] = True,
     scaling: Annotated[
-        str,
-        Option("--scaling", rich_help_panel="Advanced"),
+        str, Option("--scaling", rich_help_panel="Advanced")
     ] = "normalize",
     n_features: Annotated[
         int | None,
@@ -741,26 +616,11 @@ def _plot_pca(
             rich_help_panel="Advanced",
         ),
     ] = None,
-    verbose: Annotated[
-        bool,
-        Option("-v/-V", "--verbose/--no-verbose"),
-    ] = True,
-    show: Annotated[
-        bool,
-        Option("--show/--no-show", hidden=True),
-    ] = True,
-    whiten: Annotated[
-        bool,
-        Option("--whiten/--no-whiten"),
-    ] = False,
-    save: Annotated[
-        bool,
-        Option("--save/--no-save"),
-    ] = True,
-    filename: Annotated[
-        str | None,
-        Option("--filename"),
-    ] = None,
+    verbose: Annotated[bool, Option("-v/-V", "--verbose/--no-verbose")] = True,
+    show: Annotated[bool, Option("--show/--no-show", hidden=True)] = True,
+    whiten: Annotated[bool, Option("--whiten/--no-whiten")] = False,
+    save: Annotated[bool, Option("--save/--no-save")] = True,
+    filename: Annotated[str | None, Option("--filename")] = None,
 ) -> None:
     r"""PCA visualization of the clustering results"""
     from bblean._console import get_console
@@ -803,25 +663,12 @@ def _plot_tsne(
             show_default=False,
         ),
     ] = None,
-    title: Annotated[
-        str | None,
-        Option("--title", help="Plot title"),
-    ] = None,
-    save: Annotated[
-        bool,
-        Option("--save/--no-save"),
-    ] = True,
-    min_size: Annotated[
-        int,
-        Option("--min-size"),
-    ] = 0,
-    filename: Annotated[
-        str | None,
-        Option("--filename"),
-    ] = None,
+    title: Annotated[str | None, Option("--title", help="Plot title")] = None,
+    save: Annotated[bool, Option("--save/--no-save")] = True,
+    min_size: Annotated[int, Option("--min-size")] = 0,
+    filename: Annotated[str | None, Option("--filename")] = None,
     exaggeration: Annotated[
-        float | None,
-        Option("-e", "--exaggeration", rich_help_panel="Advanced"),
+        float | None, Option("-e", "--exaggeration", rich_help_panel="Advanced")
     ] = None,
     seed: Annotated[
         int | None,
@@ -836,25 +683,16 @@ def _plot_tsne(
             rich_help_panel="Advanced",
         ),
     ] = TSNE_SEED,
-    top: Annotated[
-        int,
-        Option("--top"),
-    ] = 20,
+    top: Annotated[int, Option("--top")] = 20,
     metric: Annotated[
-        str,
-        Option("--metric", help="Metric to use in the t-SNE source space"),
+        str, Option("--metric", help="Metric to use in the t-SNE source space")
     ] = "euclidean",
-    dof: Annotated[
-        float,
-        Option("-d", "--dof", rich_help_panel="Advanced"),
-    ] = 1.0,
+    dof: Annotated[float, Option("-d", "--dof", rich_help_panel="Advanced")] = 1.0,
     perplexity: Annotated[
-        int,
-        Option(help="t-SNE perplexity", rich_help_panel="Advanced"),
+        int, Option(help="t-SNE perplexity", rich_help_panel="Advanced")
     ] = 30,
     input_is_packed: Annotated[
-        bool,
-        Option("--packed-input/--unpacked-input", rich_help_panel="Advanced"),
+        bool, Option("--packed-input/--unpacked-input", rich_help_panel="Advanced")
     ] = True,
     n_features: Annotated[
         int | None,
@@ -867,8 +705,7 @@ def _plot_tsne(
         ),
     ] = None,
     scaling: Annotated[
-        str,
-        Option("--scaling", rich_help_panel="Advanced"),
+        str, Option("--scaling", rich_help_panel="Advanced")
     ] = "normalize",
     do_pca_init: Annotated[
         bool,
@@ -908,14 +745,8 @@ def _plot_tsne(
             help="Use multiscale perplexities (WARNING: Can be very slow!)",
         ),
     ] = False,
-    verbose: Annotated[
-        bool,
-        Option("-v/-V", "--verbose/--no-verbose"),
-    ] = True,
-    show: Annotated[
-        bool,
-        Option("--show/--no-show", hidden=True),
-    ] = True,
+    verbose: Annotated[bool, Option("-v/-V", "--verbose/--no-verbose")] = True,
+    show: Annotated[bool, Option("--show/--no-show", hidden=True)] = True,
 ) -> None:
     r"""t-SNE visualization of the clustering results"""
     from bblean._console import get_console
@@ -970,18 +801,9 @@ def _plot_summary(
             show_default=False,
         ),
     ] = None,
-    save: Annotated[
-        bool,
-        Option("--save/--no-save"),
-    ] = True,
-    ylim: Annotated[
-        int | None,
-        Option("--ylim"),
-    ] = None,
-    min_size: Annotated[
-        int,
-        Option("--min-size"),
-    ] = 0,
+    save: Annotated[bool, Option("--save/--no-save")] = True,
+    ylim: Annotated[int | None, Option("--ylim")] = None,
+    min_size: Annotated[int, Option("--min-size")] = 0,
     smiles_path: Annotated[
         Path | None,
         Option(
@@ -991,26 +813,13 @@ def _plot_summary(
             help="Optional smiles path, if passed a scaffold analysis is performed",
         ),
     ] = None,
-    title: Annotated[
-        str | None,
-        Option("--title"),
-    ] = None,
-    filename: Annotated[
-        str | None,
-        Option("--filename"),
-    ] = None,
-    top: Annotated[
-        int,
-        Option("--top"),
-    ] = 20,
+    title: Annotated[str | None, Option("--title")] = None,
+    filename: Annotated[str | None, Option("--filename")] = None,
+    top: Annotated[int, Option("--top")] = 20,
     input_is_packed: Annotated[
-        bool,
-        Option("--packed-input/--unpacked-input", rich_help_panel="Advanced"),
+        bool, Option("--packed-input/--unpacked-input", rich_help_panel="Advanced")
     ] = True,
-    scaffold_fp_kind: Annotated[
-        str,
-        Option("--scaffold-fp-kind"),
-    ] = DEFAULTS.fp_kind,
+    scaffold_fp_kind: Annotated[str, Option("--scaffold-fp-kind")] = DEFAULTS.fp_kind,
     n_features: Annotated[
         int | None,
         Option(
@@ -1028,14 +837,8 @@ def _plot_summary(
             help="Display scaffold and fingerprint number in each cluster",
         ),
     ] = True,
-    verbose: Annotated[
-        bool,
-        Option("-v/-V", "--verbose/--no-verbose"),
-    ] = True,
-    show: Annotated[
-        bool,
-        Option("--show/--no-show", hidden=True),
-    ] = True,
+    verbose: Annotated[bool, Option("-v/-V", "--verbose/--no-verbose")] = True,
+    show: Annotated[bool, Option("--show/--no-show", hidden=True)] = True,
 ) -> None:
     r"""Summary plot of the clustering results"""
     from bblean._console import get_console
@@ -1068,14 +871,8 @@ def _plot_summary(
 @app.command("thresh")
 def _guess_threshold(
     ctx: Context,
-    input_: Annotated[
-        Path,
-        Argument(help="`*.npy` file with fingerprints"),
-    ],
-    factor: Annotated[
-        float,
-        Option("-f", "--factor"),
-    ] = 3.0,
+    input_: Annotated[Path, Argument(help="`*.npy` file with fingerprints")],
+    factor: Annotated[float, Option("-f", "--factor")] = 3.0,
     n_features: Annotated[
         int | None,
         Option(
@@ -1094,10 +891,7 @@ def _guess_threshold(
             rich_help_panel="Advanced",
         ),
     ] = True,
-    max_samples: Annotated[
-        int,
-        Option("-m", "--max-samples"),
-    ] = 1_000_000,
+    max_samples: Annotated[int, Option("-m", "--max-samples")] = 1_000_000,
 ) -> None:
     r"""Estimate the optimal BitBirch threshold for a fingerprints file"""
     from bblean.bitbirch import guess_threshold
@@ -1121,12 +915,7 @@ def _run(
         Argument(help="`*.npy` file with fingerprints, or dir with `*.npy` files"),
     ] = None,
     out_dir: Annotated[
-        Path | None,
-        Option(
-            "-o",
-            "--out-dir",
-            help="Dir to dump the output files",
-        ),
+        Path | None, Option("-o", "--out-dir", help="Dir to dump the output files")
     ] = None,
     overwrite: Annotated[bool, Option(help="Allow overwriting output files")] = False,
     branching_factor: Annotated[
@@ -1139,8 +928,7 @@ def _run(
         ),
     ] = DEFAULTS.branching_factor,
     threshold: Annotated[
-        float,
-        Option("--threshold", "-t", help="Threshold for merge criterion"),
+        float, Option("--threshold", "-t", help="Threshold for merge criterion")
     ] = DEFAULTS.threshold,
     refine_threshold_change: Annotated[
         float,
@@ -1151,16 +939,13 @@ def _run(
         ),
     ] = DEFAULTS.refine_threshold_change,
     save_tree: Annotated[
-        bool,
-        Option("--save-tree/--no-save-tree", rich_help_panel="Advanced"),
+        bool, Option("--save-tree/--no-save-tree", rich_help_panel="Advanced")
     ] = False,
     save_centroids: Annotated[
-        bool,
-        Option("--save-centroids/--no-save-centroids", rich_help_panel="Advanced"),
+        bool, Option("--save-centroids/--no-save-centroids", rich_help_panel="Advanced")
     ] = True,
     merge_criterion: Annotated[
-        str,
-        Option("--set-merge", "-m", help="Merge criterion for initial clustsering"),
+        str, Option("--set-merge", "-m", help="Merge criterion for initial clustsering")
     ] = DEFAULTS.merge_criterion,
     refine_merge_criterion: Annotated[
         str,
@@ -1182,22 +967,13 @@ def _run(
         ),
     ] = 0,
     refine_rounds: Annotated[
-        int | None,
-        Option(
-            "--refine-rounds",
-            help=("Num. of refinement rounds. "),
-        ),
+        int | None, Option("--refine-rounds", help=("Num. of refinement rounds. "))
     ] = None,
     recluster_rounds: Annotated[
-        int,
-        Option(
-            "--recluster-rounds",
-            help=("Num. of reclustering rounds. "),
-        ),
+        int, Option("--recluster-rounds", help=("Num. of reclustering rounds. "))
     ] = 0,
     recluster_shuffle: Annotated[
-        bool,
-        Option("--recluster-shuffle/--no-recluster-shuffle", hidden=True),
+        bool, Option("--recluster-shuffle/--no-recluster-shuffle", hidden=True)
     ] = False,
     n_features: Annotated[
         int | None,
@@ -1259,10 +1035,7 @@ def _run(
             help="Copy the input files instead of symlink",
         ),
     ] = False,
-    verbose: Annotated[
-        bool,
-        Option("-v/-V", "--verbose/--no-verbose"),
-    ] = True,
+    verbose: Annotated[bool, Option("-v/-V", "--verbose/--no-verbose")] = True,
 ) -> None:
     r"""Run standard, serial BitBIRCH clustering over `*.npy` fingerprint files"""
     # TODO: Remove code duplication with multiround
@@ -1354,9 +1127,7 @@ def _run(
             )
             with console.status(msg, spinner="dots"):
                 tree.refine_inplace(
-                    input_files,
-                    input_is_packed=input_is_packed,
-                    n_largest=refine_num,
+                    input_files, input_is_packed=input_is_packed, n_largest=refine_num
                 )
         for r in range(recluster_rounds):
             msg = f"[italic]Reclustering, round {r + 1}...[/italic]"
@@ -1414,8 +1185,7 @@ def _multiround(
         Argument(help="Directory with input `*.npy` files with packed fingerprints"),
     ] = None,
     out_dir: Annotated[
-        Path | None,
-        Option("-o", "--out-dir", help="Dir for output files"),
+        Path | None, Option("-o", "--out-dir", help="Dir for output files")
     ] = None,
     overwrite: Annotated[bool, Option(help="Allow overwriting output files")] = False,
     num_initial_processes: Annotated[
@@ -1454,12 +1224,10 @@ def _multiround(
         ),
     ] = DEFAULTS.merge_criterion,
     save_tree: Annotated[
-        bool,
-        Option("--save-tree/--no-save-tree", rich_help_panel="Advanced"),
+        bool, Option("--save-tree/--no-save-tree", rich_help_panel="Advanced")
     ] = False,
     save_centroids: Annotated[
-        bool,
-        Option("--save-centroids/--no-save-centroids", rich_help_panel="Advanced"),
+        bool, Option("--save-centroids/--no-save-centroids", rich_help_panel="Advanced")
     ] = True,
     mid_threshold_change: Annotated[
         float,
@@ -1480,7 +1248,7 @@ def _multiround(
         float,
         Option(
             help="Tolerance value for all steps that use the 'tolerance' criterion"
-            " (by default all except initial round)",
+            " (by default all except initial round)"
         ),
     ] = DEFAULTS.tolerance,
     n_features: Annotated[
@@ -1503,11 +1271,7 @@ def _multiround(
     ] = True,
     # Advanced options
     num_midsection_rounds: Annotated[
-        int,
-        Option(
-            "--num-mid-rounds",
-            help="Number of midsection rounds to perform",
-        ),
+        int, Option("--num-mid-rounds", help="Number of midsection rounds to perform")
     ] = 1,
     split_largest_after_midsection: Annotated[
         bool,
@@ -1591,14 +1355,8 @@ def _multiround(
             help="Copy the input files instead of symlink",
         ),
     ] = False,
-    verbose: Annotated[
-        bool,
-        Option("-v/-V", "--verbose/--no-verbose"),
-    ] = True,
-    cleanup: Annotated[
-        bool,
-        Option("--cleanup/--no-cleanup", hidden=True),
-    ] = True,
+    verbose: Annotated[bool, Option("-v/-V", "--verbose/--no-verbose")] = True,
+    cleanup: Annotated[bool, Option("--cleanup/--no-cleanup", hidden=True)] = True,
 ) -> None:
     r"""Run multi-round BitBIRCH clustering, optionally parallelize over `*.npy` files"""  # noqa:E501
     from bblean._console import get_console
@@ -1690,6 +1448,7 @@ def _multiround(
         for file in input_files:
             (input_fps_dir / file.name).symlink_to(file.resolve())
 
+
 @app.command("multiround-centroids")
 def _multiround_centroids(
     ctx: Context,
@@ -1698,8 +1457,7 @@ def _multiround_centroids(
         Argument(help="Directory with input `*.npy` files with packed fingerprints"),
     ] = None,
     out_dir: Annotated[
-        Path | None,
-        Option("-o", "--out-dir", help="Dir for output files"),
+        Path | None, Option("-o", "--out-dir", help="Dir for output files")
     ] = None,
     overwrite: Annotated[bool, Option(help="Allow overwriting output files")] = False,
     num_initial_processes: Annotated[
@@ -1714,20 +1472,16 @@ def _multiround_centroids(
         ),
     ] = None,
     branching_factor: Annotated[
-        int,
-        Option("--branching", "-b", help="BitBIRCH branching factor"),
+        int, Option("--branching", "-b", help="BitBIRCH branching factor")
     ] = DEFAULTS.branching_factor,
     threshold: Annotated[
-        float,
-        Option("--threshold", "-t", help="Threshold for merge criterion"),
+        float, Option("--threshold", "-t", help="Threshold for merge criterion")
     ] = DEFAULTS.threshold,
     merge_criterion: Annotated[
-        str,
-        Option("-m", "--merge", help="Merge criterion (e.g., 'diameter')"),
+        str, Option("-m", "--merge", help="Merge criterion (e.g., 'diameter')")
     ] = DEFAULTS.merge_criterion,
     midsection_threshold_change: Annotated[
-        float,
-        Option("--mid-threshold-change", help="Threshold change for refinement"),
+        float, Option("--mid-threshold-change", help="Threshold change for refinement")
     ] = 0.20,
     reclustering_iterations: Annotated[
         int, Option("--reclass-iter", help="Number of reclustering iterations")
@@ -1753,37 +1507,63 @@ def _multiround_centroids(
     ] = True,
     num_midsection_rounds: Annotated[
         int,
-        Option("--num-mid-rounds", help="Number of midsection rounds", rich_help_panel="Advanced"),
+        Option(
+            "--num-mid-rounds",
+            help="Number of midsection rounds",
+            rich_help_panel="Advanced",
+        ),
     ] = 1,
     bin_size: Annotated[
-        int, Option("--bin-size", help="Bin size for chunking", rich_help_panel="Advanced")
+        int,
+        Option("--bin-size", help="Bin size for chunking", rich_help_panel="Advanced"),
     ] = 10,
     max_tasks_per_process: Annotated[
-        int, Option("--max-tasks-per-process", help="Max tasks per process", rich_help_panel="Advanced")
+        int,
+        Option(
+            "--max-tasks-per-process",
+            help="Max tasks per process",
+            rich_help_panel="Advanced",
+        ),
     ] = 1,
     save_tree: Annotated[
         bool,
-        Option("--save-tree/--no-save-tree", help="Save tree structure", rich_help_panel="Advanced"),
+        Option(
+            "--save-tree/--no-save-tree",
+            help="Save tree structure",
+            rich_help_panel="Advanced",
+        ),
     ] = False,
     save_centroids: Annotated[
         bool,
-        Option("--save-centroids/--no-save-centroids", help="Save centroids", rich_help_panel="Advanced"),
+        Option(
+            "--save-centroids/--no-save-centroids",
+            help="Save centroids",
+            rich_help_panel="Advanced",
+        ),
     ] = False,
     fork: Annotated[
         bool,
-        Option(help="Force 'fork' multiprocessing on Linux", rich_help_panel="Advanced"),
+        Option(
+            help="Force 'fork' multiprocessing on Linux", rich_help_panel="Advanced"
+        ),
     ] = False,
     max_fps: Annotated[
         int | None,
-        Option("--max-fps", help="Max fps to load per file", rich_help_panel="Debug", hidden=True),
+        Option(
+            "--max-fps",
+            help="Max fps to load per file",
+            rich_help_panel="Debug",
+            hidden=True,
+        ),
     ] = None,
     verbose: Annotated[
-        bool,
-        Option("-v/-V", "--verbose/--no-verbose", help="Verbose output"),
+        bool, Option("-v/-V", "--verbose/--no-verbose", help="Verbose output")
     ] = True,
     cleanup: Annotated[
         bool,
-        Option("--cleanup/--no-cleanup", help="Cleanup intermediate files", hidden=True),
+        Option(
+            "--cleanup/--no-cleanup", help="Cleanup intermediate files", hidden=True
+        ),
     ] = True,
     monitor_rss: Annotated[
         bool,
@@ -1811,7 +1591,11 @@ def _multiround_centroids(
         ),
     ] = False,
 ) -> None:
-    r"""Run multi-round BitBIRCH clustering using centroids (efficient for large datasets)"""
+    r"""
+    Run multi-round BitBIRCH clustering using centroids.
+
+    This is efficient for large datasets.
+    """
     from bblean._console import get_console
     from bblean.multiround_centroids import run_multiround_centroids
     from bblean.fingerprints import _get_fps_file_num
@@ -1851,7 +1635,7 @@ def _multiround_centroids(
 
     console.print_banner()
     console.print()
-    console.print(f"[bold]Multi-round Centroids Clustering[/bold]")
+    console.print("[bold]Multi-round Centroids Clustering[/bold]")
     console.print(f"  Processes (initial): {num_initial_processes}")
     console.print(f"  Branching factor: {branching_factor}")
     console.print(f"  Threshold: {threshold}")
@@ -1901,8 +1685,7 @@ def _multiround_reclustering(
         Argument(help="Directory with input `*.npy` files with packed fingerprints"),
     ] = None,
     out_dir: Annotated[
-        Path | None,
-        Option("-o", "--out-dir", help="Dir for output files"),
+        Path | None, Option("-o", "--out-dir", help="Dir for output files")
     ] = None,
     overwrite: Annotated[bool, Option(help="Allow overwriting output files")] = False,
     num_initial_processes: Annotated[
@@ -1917,32 +1700,37 @@ def _multiround_reclustering(
         ),
     ] = None,
     branching_factor: Annotated[
-        int,
-        Option("--branching", "-b", help="BitBIRCH branching factor"),
+        int, Option("--branching", "-b", help="BitBIRCH branching factor")
     ] = DEFAULTS.branching_factor,
     threshold: Annotated[
-        float,
-        Option("--threshold", "-t", help="Threshold for merge criterion"),
+        float, Option("--threshold", "-t", help="Threshold for merge criterion")
     ] = DEFAULTS.threshold,
     merge_criterion: Annotated[
-        str,
-        Option("-m", "--merge", help="Merge criterion (e.g., 'diameter')"),
+        str, Option("-m", "--merge", help="Merge criterion (e.g., 'diameter')")
     ] = DEFAULTS.merge_criterion,
     midsection_threshold_change: Annotated[
-        float,
-        Option("--mid-threshold-change", help="Threshold change for refinement"),
+        float, Option("--mid-threshold-change", help="Threshold change for refinement")
     ] = 0.0,
     reclustering_iterations_initial: Annotated[
         int,
-        Option("--recluster_iter_init", help="Number of reclustering iterations for initial round"),
+        Option(
+            "--recluster_iter_init",
+            help="Number of reclustering iterations for initial round",
+        ),
     ] = 3,
     reclustering_iterations_midsection: Annotated[
         int,
-        Option("--recluster_iter_mid", help="Number of reclustering iterations for midsection rounds"),
+        Option(
+            "--recluster_iter_mid",
+            help="Number of reclustering iterations for midsection rounds",
+        ),
     ] = 0,
     reclustering_iterations_final: Annotated[
         int,
-        Option("--recluster_iter_final", help="Number of reclustering iterations for final round"),
+        Option(
+            "--recluster_iter_final",
+            help="Number of reclustering iterations for final round",
+        ),
     ] = 0,
     reclustering_extra_threshold: Annotated[
         float, Option("--recluster_extra_t", help="Extra threshold for reclustering")
@@ -1965,37 +1753,63 @@ def _multiround_reclustering(
     ] = True,
     num_midsection_rounds: Annotated[
         int,
-        Option("--num-mid-rounds", help="Number of midsection rounds", rich_help_panel="Advanced"),
+        Option(
+            "--num-mid-rounds",
+            help="Number of midsection rounds",
+            rich_help_panel="Advanced",
+        ),
     ] = 1,
     bin_size: Annotated[
-        int, Option("--bin-size", help="Bin size for chunking", rich_help_panel="Advanced")
+        int,
+        Option("--bin-size", help="Bin size for chunking", rich_help_panel="Advanced"),
     ] = 10,
     max_tasks_per_process: Annotated[
-        int, Option("--max-tasks-per-process", help="Max tasks per process", rich_help_panel="Advanced")
+        int,
+        Option(
+            "--max-tasks-per-process",
+            help="Max tasks per process",
+            rich_help_panel="Advanced",
+        ),
     ] = 1,
     save_tree: Annotated[
         bool,
-        Option("--save-tree/--no-save-tree", help="Save tree structure", rich_help_panel="Advanced"),
+        Option(
+            "--save-tree/--no-save-tree",
+            help="Save tree structure",
+            rich_help_panel="Advanced",
+        ),
     ] = False,
     save_centroids: Annotated[
         bool,
-        Option("--save-centroids/--no-save-centroids", help="Save centroids", rich_help_panel="Advanced"),
+        Option(
+            "--save-centroids/--no-save-centroids",
+            help="Save centroids",
+            rich_help_panel="Advanced",
+        ),
     ] = False,
     fork: Annotated[
         bool,
-        Option(help="Force 'fork' multiprocessing on Linux", rich_help_panel="Advanced"),
+        Option(
+            help="Force 'fork' multiprocessing on Linux", rich_help_panel="Advanced"
+        ),
     ] = False,
     max_fps: Annotated[
         int | None,
-        Option("--max-fps", help="Max fps to load per file", rich_help_panel="Debug", hidden=True),
+        Option(
+            "--max-fps",
+            help="Max fps to load per file",
+            rich_help_panel="Debug",
+            hidden=True,
+        ),
     ] = None,
     verbose: Annotated[
-        bool,
-        Option("-v/-V", "--verbose/--no-verbose", help="Verbose output"),
+        bool, Option("-v/-V", "--verbose/--no-verbose", help="Verbose output")
     ] = True,
     cleanup: Annotated[
         bool,
-        Option("--cleanup/--no-cleanup", help="Cleanup intermediate files", hidden=True),
+        Option(
+            "--cleanup/--no-cleanup", help="Cleanup intermediate files", hidden=True
+        ),
     ] = True,
     monitor_rss: Annotated[
         bool,
@@ -2015,14 +1829,22 @@ def _multiround_reclustering(
         ),
     ] = 1.0,
 ) -> None:
-    r"""Run multi-round BitBIRCH clustering with reclustering refinement (efficient for large datasets)"""
+    r"""
+    Run multi-round BitBIRCH clustering with reclustering refinement.
+
+    This is efficient for large datasets.
+    """
     import importlib
     from bblean._console import get_console
     from bblean.fingerprints import _get_fps_file_num
 
     # Import module with space in name using importlib
-    multiround_reclustering_module = importlib.import_module("bblean.multiround _recluster")
-    run_multiround_reclustering = multiround_reclustering_module.run_multiround_reclustering
+    multiround_reclustering_module = importlib.import_module(
+        "bblean.multiround _recluster"
+    )
+    run_multiround_reclustering = (
+        multiround_reclustering_module.run_multiround_reclustering
+    )
 
     console = get_console(silent=not verbose)
 
@@ -2059,7 +1881,7 @@ def _multiround_reclustering(
 
     console.print_banner()
     console.print()
-    console.print(f"[bold]Multi-round Reclustering Clustering[/bold]")
+    console.print("[bold]Multi-round Reclustering Clustering[/bold]")
     console.print(f"  Processes (initial): {num_initial_processes}")
     console.print(f"  Branching factor: {branching_factor}")
     console.print(f"  Threshold: {threshold}")
@@ -2134,20 +1956,14 @@ def _fps_from_smiles(
         Argument(show_default=False, help="Paths to *.smi files with smiles"),
     ] = None,
     out_dir: Annotated[
-        Path | None,
-        Option("-o", "--out-dir", show_default=False),
+        Path | None, Option("-o", "--out-dir", show_default=False)
     ] = None,
     out_name: Annotated[
-        str | None,
-        Option("--name", help="Base name of output file"),
+        str | None, Option("--name", help="Base name of output file")
     ] = None,
-    kind: Annotated[
-        str,
-        Option("-k", "--kind"),
-    ] = DEFAULTS.fp_kind,
+    kind: Annotated[str, Option("-k", "--kind")] = DEFAULTS.fp_kind,
     fp_size: Annotated[
-        int,
-        Option("--n-features", help="Num. features of the generated fingerprints"),
+        int, Option("--n-features", help="Num. features of the generated fingerprints")
     ] = DEFAULTS.n_features,
     parts: Annotated[
         int | None,
@@ -2182,10 +1998,7 @@ def _fps_from_smiles(
             rich_help_panel="Advanced",
         ),
     ] = "uint8",
-    verbose: Annotated[
-        bool,
-        Option("-v/-V", "--verbose/--no-verbose"),
-    ] = True,
+    verbose: Annotated[bool, Option("-v/-V", "--verbose/--no-verbose")] = True,
     num_ps: Annotated[
         int | None,
         Option(
@@ -2287,8 +2100,7 @@ def _fps_from_smiles(
         )
     except ValueError:
         console.print(
-            "'--max-fps-per-file' and '--num-parts' are mutually exclusive",
-            style="red",
+            "'--max-fps-per-file' and '--num-parts' are mutually exclusive", style="red"
         )
         raise Abort() from None
     if out_dir is None:
@@ -2396,10 +2208,7 @@ def _fps_from_smiles(
             )
             np.save(out_dir / f"invalid-{unique_id}.npy", mask.nonzero()[0].reshape(-1))
 
-        np.save(
-            out_dir / out_name,
-            fps,
-        )
+        np.save(out_dir / out_name, fps)
         del mask
         del fps
         # Cleanup
@@ -2411,13 +2220,9 @@ def _fps_from_smiles(
 
 @app.command("fps-split", rich_help_panel="Fingerprints")
 def _split_fps(
-    input_: Annotated[
-        Path,
-        Argument(help="`*.npy` file with fingerprints"),
-    ],
+    input_: Annotated[Path, Argument(help="`*.npy` file with fingerprints")],
     out_dir: Annotated[
-        Path | None,
-        Option("-o", "--out-dir", show_default=False),
+        Path | None, Option("-o", "--out-dir", show_default=False)
     ] = None,
     parts: Annotated[
         int | None,
@@ -2490,20 +2295,16 @@ def _split_fps(
 @app.command("fps-shuffle", rich_help_panel="Fingerprints")
 def _shuffle_fps(
     in_path: Annotated[
-        Path,
-        Argument(help="`*.npy` file with fingerprints, or dir with `*.npy` files"),
+        Path, Argument(help="`*.npy` file with fingerprints, or dir with `*.npy` files")
     ],
     out_dir: Annotated[
-        Path | None,
-        Option("-o", "--out-dir", show_default=False),
+        Path | None, Option("-o", "--out-dir", show_default=False)
     ] = None,
     seed: Annotated[
-        int | None,
-        Option("--seed", hidden=True, rich_help_panel="Debug"),
+        int | None, Option("--seed", hidden=True, rich_help_panel="Debug")
     ] = None,
     save_shuffle_idxs: Annotated[
-        bool,
-        Option("--save-shuffle-idxs/--no-save-shuffle-idxs"),
+        bool, Option("--save-shuffle-idxs/--no-save-shuffle-idxs")
     ] = True,
 ) -> None:
     """Shuffle a fingerprints file
@@ -2554,8 +2355,7 @@ def _merge_fps(
         Argument(help="Directory with input `*.npy` files with packed fingerprints"),
     ],
     out_dir: Annotated[
-        Path | None,
-        Option("-o", "--out-dir", show_default=False),
+        Path | None, Option("-o", "--out-dir", show_default=False)
     ] = None,
 ) -> None:
     r"""Merge a dir with multiple `*.npy` fingerprint file into a single `*.npy` file"""
@@ -2592,20 +2392,16 @@ def _merge_fps(
 @app.command("fps-sort", rich_help_panel="Fingerprints")
 def _sort_fps(
     in_path: Annotated[
-        Path,
-        Argument(help="`*.npy` file with fingerprints, or dir with `*.npy` files"),
+        Path, Argument(help="`*.npy` file with fingerprints, or dir with `*.npy` files")
     ],
     out_dir: Annotated[
-        Path | None,
-        Option("-o", "--out-dir", show_default=False),
+        Path | None, Option("-o", "--out-dir", show_default=False)
     ] = None,
     seed: Annotated[
-        int | None,
-        Option("--seed", hidden=True, rich_help_panel="Debug"),
+        int | None, Option("--seed", hidden=True, rich_help_panel="Debug")
     ] = None,
     input_is_packed: Annotated[
-        bool,
-        Option("--packed-input/--unpacked-input", rich_help_panel="Advanced"),
+        bool, Option("--packed-input/--unpacked-input", rich_help_panel="Advanced")
     ] = True,
     n_features: Annotated[
         int | None,
@@ -2618,8 +2414,7 @@ def _sort_fps(
         ),
     ] = None,
     save_sort_idxs: Annotated[
-        bool,
-        Option("--save-sort-idxs/--no-save-sort-idxs"),
+        bool, Option("--save-sort-idxs/--no-save-sort-idxs")
     ] = True,
 ) -> None:
     r"""Sort a fingerprints file by popcount"""
@@ -2671,12 +2466,10 @@ def _sort_fps(
 @app.command("fps-unpack", rich_help_panel="Fingerprints")
 def _unpack_fps(
     in_path: Annotated[
-        Path,
-        Argument(help="`*.npy` file with fingerprints, or dir with `*.npy` files"),
+        Path, Argument(help="`*.npy` file with fingerprints, or dir with `*.npy` files")
     ],
     out_dir: Annotated[
-        Path | None,
-        Option("-o", "--out-dir", show_default=False),
+        Path | None, Option("-o", "--out-dir", show_default=False)
     ] = None,
     n_features: Annotated[
         int | None,
@@ -2730,12 +2523,10 @@ def _unpack_fps(
 @app.command("fps-pack", rich_help_panel="Fingerprints")
 def _pack_fps(
     in_path: Annotated[
-        Path,
-        Argument(help="`*.npy` file with fingerprints, or dir with `*.npy` files"),
+        Path, Argument(help="`*.npy` file with fingerprints, or dir with `*.npy` files")
     ],
     out_dir: Annotated[
-        Path | None,
-        Option("-o", "--out-dir", show_default=False),
+        Path | None, Option("-o", "--out-dir", show_default=False)
     ] = None,
 ) -> None:
     r"""Pack a fingerprints file"""

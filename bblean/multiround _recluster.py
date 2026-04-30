@@ -54,7 +54,7 @@ import typing as tp
 import multiprocessing as mp
 from pathlib import Path
 
-from rich.console import Console # type: ignore[import]
+from rich.console import Console  # type: ignore[import]
 import numpy as np
 from numpy.typing import NDArray
 
@@ -66,7 +66,7 @@ from bblean.utils import batched
 from bblean.bitbirch import BitBirch
 from bblean.fingerprints import _get_fps_file_num
 
-__all__ = ["run_multiround_bitbirch"]
+__all__ = ["run_multiround_reclustering"]
 
 
 # Save a list of numpy arrays into a single array in a streaming fashion, avoiding
@@ -148,12 +148,12 @@ class _InitialRound:
         self,
         branching_factor: int,
         threshold: float,
-        out_dir: Path | str,        
+        out_dir: Path | str,
         reclustering_iterations: int,
         extra_threshold: float,
         n_features: int | None = None,
         max_fps: int | None = None,
-        merge_criterion: str = 'diameter',
+        merge_criterion: str = "diameter",
         input_is_packed: bool = True,
     ) -> None:
         self.branching_factor = branching_factor
@@ -188,7 +188,10 @@ class _InitialRound:
 
         # Recluster in place to reduce the number of clusters
         if self.reclustering_iterations > 0:
-            tree.recluster_inplace(iterations=self.reclustering_iterations, extra_threshold=self.extra_threshold)
+            tree.recluster_inplace(
+                iterations=self.reclustering_iterations,
+                extra_threshold=self.extra_threshold,
+            )
 
         # Release memory before getting the buffers and mol idxs for the next round
         tree.delete_internal_nodes()
@@ -239,7 +242,10 @@ class _TreeMergingRound:
 
         # Recluster in place to reduce the number of clusters
         if self.reclustering_iterations > 0:
-            tree.recluster_inplace(iterations=self.reclustering_iterations, extra_threshold=self.extra_threshold)
+            tree.recluster_inplace(
+                iterations=self.reclustering_iterations,
+                extra_threshold=self.extra_threshold,
+            )
 
         # Release memory before save the round's BFs
         tree.delete_internal_nodes()
@@ -251,7 +257,7 @@ class _TreeMergingRound:
         )
 
 
-class _FinalTreeMergingRound():
+class _FinalTreeMergingRound:
     def __init__(
         self,
         branching_factor: int,
@@ -259,7 +265,7 @@ class _FinalTreeMergingRound():
         merge_criterion: str,
         out_dir: Path | str,
         save_tree: bool,
-        save_centroids: bool,        
+        save_centroids: bool,
         reclustering_iterations: int,
         extra_threshold: float = 0.025,
     ) -> None:
@@ -292,7 +298,10 @@ class _FinalTreeMergingRound():
 
         # Recluster in place to reduce the number of clusters
         if self.reclustering_iterations > 0:
-            tree.recluster_inplace(iterations=self.reclustering_iterations, extra_threshold=self.extra_threshold)
+            tree.recluster_inplace(
+                iterations=self.reclustering_iterations,
+                extra_threshold=self.extra_threshold,
+            )
 
         # Save outputs and exit
         if self.save_tree:
@@ -420,7 +429,7 @@ def run_multiround_reclustering(
         batches = _chunk_file_pairs_in_batches(file_pairs, bin_size, console)
         merging_fn = _TreeMergingRound(
             branching_factor=branching_factor,
-            threshold=threshold+midsection_threshold_change,
+            threshold=threshold + midsection_threshold_change,
             round_idx=round_idx,
             out_dir=out_dir,
             merge_criterion=merge_criterion,

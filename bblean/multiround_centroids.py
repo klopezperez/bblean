@@ -54,7 +54,7 @@ import typing as tp
 import multiprocessing as mp
 from pathlib import Path
 
-from rich.console import Console # type: ignore
+from rich.console import Console  # type: ignore
 import numpy as np
 from numpy.typing import NDArray
 
@@ -66,7 +66,7 @@ from bblean.utils import batched
 from bblean.bitbirch import BitBirch
 from bblean.fingerprints import _get_fps_file_num
 
-__all__ = ["run_multiround_bitbirch"]
+__all__ = ["run_multiround_centroids"]
 
 
 # Save a list of numpy arrays into a single array in a streaming fashion, avoiding
@@ -104,9 +104,7 @@ def _get_prev_round_centroids_and_n(
 def _sort_batch(b: tp.Sequence[tuple[Path, Path]]) -> tuple[tuple[Path, Path], ...]:
     return tuple(
         sorted(
-            b,
-            key=lambda x: int(x[0].name.split("-")[-1].split(".")[0]),
-            reverse=True,
+            b, key=lambda x: int(x[0].name.split("-")[-1].split(".")[0]), reverse=True
         )
     )
 
@@ -136,14 +134,22 @@ def _save_centroids_and_mol_idxs(
     label: str,
     round_idx: int,
 ) -> None:
-    _numpy_streaming_save(centroids, out_dir / f"round-{round_idx}-centroids-{label}.npy")
-    np.save(out_dir / f"round-{round_idx}-n-{label}.npy", np.array([len(cluster) for cluster in mol_ids]))
+    _numpy_streaming_save(
+        centroids, out_dir / f"round-{round_idx}-centroids-{label}.npy"
+    )
+    np.save(
+        out_dir / f"round-{round_idx}-n-{label}.npy",
+        np.array([len(cluster) for cluster in mol_ids]),
+    )
     with open(out_dir / f"round-{round_idx}-idxs-{label}.pkl", mode="wb") as f:
         pickle.dump(mol_ids, f)
 
-def _reweight_centroids(centroids: NDArray[NDArray[np.integer]],
-                        sizes: NDArray[np.integer],
-                        mol_ids: list[int]) -> list[NDArray[np.integer]]:
+
+def _reweight_centroids(
+    centroids: NDArray[NDArray[np.integer]],
+    sizes: NDArray[np.integer],
+    mol_ids: list[int],
+) -> list[NDArray[np.integer]]:
     """Recompute centroids as a size-weighted average of original centroids.
 
     centroids: packed centroids array for the ORIGINAL items (shape: [M, bytes])
@@ -213,7 +219,7 @@ class _InitialRound:
         self.threshold = threshold
         self.merge_criterion = merge_criterion
 
-        # Other user-definable params that are less commonly used, but still important for some use cases
+        # Other user-definable params
         self.max_fps = max_fps
         self.out_dir = Path(out_dir)
         self.n_features = n_features
@@ -258,7 +264,7 @@ class _InitialRound:
         centroids = output["centroids"]
         mol_ids = output["mol_ids"]
         del output
-       
+
         _save_centroids_and_mol_idxs(self.out_dir, centroids, mol_ids, file_label, 1)
 
 
@@ -297,7 +303,7 @@ class _TreeMergingRound:
         tree = BitBirch(
             branching_factor=self.branching_factor,
             threshold=self.threshold,
-            merge_criterion=self.merge_criterion
+            merge_criterion=self.merge_criterion,
         )
 
         # Rebuild a tree, inserting all BitFeatures from the corresponding batch
@@ -308,11 +314,11 @@ class _TreeMergingRound:
             if self.reweight_centroids:
                 # Attach the sizes
                 sizes.extend(np.load(sizes_path, mmap_mode="r"))
-                # Load the original packed centroids so we can recompute weighted centroids
+                # Load the original packed centroids
                 original_centroids_list.extend(np.load(centroid_path, mmap_mode="r"))
-        
+
         if self.reweight_centroids:
-            # Convert sizes to np array, this is needed for reclustering and reweighting functions
+            # Convert sizes to np array
             sizes = np.array(sizes)
 
             # Concatenate original centroids into a single array matching `sizes`
@@ -323,10 +329,12 @@ class _TreeMergingRound:
                     # Fallback to concatenation
                     orig_centroids = np.concatenate(original_centroids_list, axis=0)
             else:
-                raise ValueError("Reweighting requested but no original centroids found")
+                raise ValueError(
+                    "Reweighting requested but no original centroids found"
+                )
 
         # Either do a reclustering step or not
-        #if self.reclustering_iterations > 0:
+        # if self.reclustering_iterations > 0:
         #    tree.recluster_inplace(
         #        iterations=self.reclustering_iterations,
         #        extra_threshold=self.extra_threshold,
@@ -335,7 +343,7 @@ class _TreeMergingRound:
         # Release memory
         tree.delete_internal_nodes()
 
-        # Get the centroids 
+        # Get the centroids
         output = tree.get_centroids_mol_ids()
         centroids = output["centroids"]
         mol_ids = output["mol_ids"]
@@ -343,7 +351,9 @@ class _TreeMergingRound:
 
         # Fix the mol_ids to reciprocate the original indexes
         # Read the mol_ids files
-        mol_ids_files = [str(f).replace("centroids", "idxs") for f, _ in batch_path_pairs]
+        mol_ids_files = [
+            str(f).replace("centroids", "idxs") for f, _ in batch_path_pairs
+        ]
         mol_ids_files = [f.replace("npy", "pkl") for f in mol_ids_files]
 
         all_mol_ids = []
@@ -366,14 +376,14 @@ class _TreeMergingRound:
                 new_centroids = _reweight_centroids(orig_centroids, sizes, mol_ids)
                 centroids = new_centroids
             except Exception:
-                # If reweighting fails for any reason, leave centroids as returned by the tree
                 pass
-        #_save_centroids_and_mol_idxs(self.out_dir, centroids, mol_ids, batch_label, self.round_idx) #FIXXXXXXXXX
 
-        _save_centroids_and_mol_idxs(self.out_dir, centroids, corrected_mol_ids, batch_label, self.round_idx)
+        _save_centroids_and_mol_idxs(
+            self.out_dir, centroids, corrected_mol_ids, batch_label, self.round_idx
+        )
 
 
-class _FinalTreeMergingRound():
+class _FinalTreeMergingRound:
     def __init__(
         self,
         branching_factor: int,
@@ -404,7 +414,7 @@ class _FinalTreeMergingRound():
         tree = BitBirch(
             branching_factor=self.branching_factor,
             threshold=self.threshold,
-            merge_criterion=self.merge_criterion
+            merge_criterion=self.merge_criterion,
         )
 
         # Rebuild a tree, inserting all BitFeatures from the corresponding batch
@@ -414,12 +424,12 @@ class _FinalTreeMergingRound():
 
             # Attach the sizes
             sizes.extend(np.load(sizes_path, mmap_mode="r"))
-            
-        # Convert sizes to np array, this is needed for reclustering and reweighting functions
+
+        # Convert sizes to np array
         sizes = np.array(sizes)
 
         # Either do a reclustering step or not
-        #if self.reclustering_iterations > 0:
+        # if self.reclustering_iterations > 0:
         #    tree.recluster_inplace(
         #        iterations=self.reclustering_iterations,
         #        extra_threshold=self.extra_threshold,
@@ -429,7 +439,7 @@ class _FinalTreeMergingRound():
         if self.save_tree:
             # TODO: Find alternative solution
             tree.save(self.out_dir / "bitbirch.pkl")
-            
+
         # Release memory
         tree.delete_internal_nodes()
 
@@ -447,7 +457,9 @@ class _FinalTreeMergingRound():
 
         # Fix the mol_ids to reciprocate the original indexes
         # Read the mol_ids files
-        mol_ids_files = [str(f).replace("centroids", "idxs") for f, _ in batch_path_pairs]
+        mol_ids_files = [
+            str(f).replace("centroids", "idxs") for f, _ in batch_path_pairs
+        ]
         mol_ids_files = [f.replace("npy", "pkl") for f in mol_ids_files]
 
         all_mol_ids = []
@@ -500,7 +512,6 @@ def run_multiround_centroids(
     reclustering_iterations: int = 3,
     extra_threshold: float = 0.025,
     reweight_centroids: bool = False,
-
     # Advanced
     num_midsection_rounds: int = 1,
     bin_size: int = 5,
@@ -508,7 +519,6 @@ def run_multiround_centroids(
     mp_context: tp.Any = None,
     save_tree: bool = False,
     save_centroids: bool = True,
-
     # Debug
     max_fps: int | None = None,
     verbose: bool = False,
@@ -579,8 +589,7 @@ def run_multiround_centroids(
     timer.end_timing(f"round-{round_idx}", console)
     console.print_peak_mem(out_dir)
 
-
-    #####################################################################################
+    ###########################################################
 
     # Mid-section "Tree-Merging" rounds of clustering
     for _ in range(num_midsection_rounds):
@@ -618,7 +627,7 @@ def run_multiround_centroids(
         timer.end_timing(f"round-{round_idx}", console)
         console.print_peak_mem(out_dir)
 
-    ########################################################################################################
+    ###########################################
     # Final "Tree-Merging" round of clustering
     round_idx += 1
     timer.init_timing(f"round-{round_idx}")
@@ -635,7 +644,7 @@ def run_multiround_centroids(
     )
     with console.status("[italic]BitBirching...[/italic]", spinner="dots"):
         final_fn(("", file_pairs))
-       
+
     timer.end_timing(f"round-{round_idx}", console)
     console.print_peak_mem(out_dir)
     # Remove intermediate files
