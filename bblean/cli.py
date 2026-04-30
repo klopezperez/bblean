@@ -1690,6 +1690,417 @@ def _multiround(
         for file in input_files:
             (input_fps_dir / file.name).symlink_to(file.resolve())
 
+@app.command("multiround-centroids")
+def _multiround_centroids(
+    ctx: Context,
+    in_dir: Annotated[
+        Path | None,
+        Argument(help="Directory with input `*.npy` files with packed fingerprints"),
+    ] = None,
+    out_dir: Annotated[
+        Path | None,
+        Option("-o", "--out-dir", help="Dir for output files"),
+    ] = None,
+    overwrite: Annotated[bool, Option(help="Allow overwriting output files")] = False,
+    num_initial_processes: Annotated[
+        int, Option("--ps", "--processes", help="Num. processes for first round")
+    ] = 10,
+    num_midsection_processes: Annotated[
+        int | None,
+        Option(
+            "--mid-ps",
+            "--mid-processes",
+            help="Num. processes for middle section rounds",
+        ),
+    ] = None,
+    branching_factor: Annotated[
+        int,
+        Option("--branching", "-b", help="BitBIRCH branching factor"),
+    ] = DEFAULTS.branching_factor,
+    threshold: Annotated[
+        float,
+        Option("--threshold", "-t", help="Threshold for merge criterion"),
+    ] = DEFAULTS.threshold,
+    merge_criterion: Annotated[
+        str,
+        Option("-m", "--merge", help="Merge criterion (e.g., 'diameter')"),
+    ] = DEFAULTS.merge_criterion,
+    midsection_threshold_change: Annotated[
+        float,
+        Option("--mid-threshold-change", help="Threshold change for refinement"),
+    ] = 0.20,
+    reclustering_iterations: Annotated[
+        int, Option("--reclass-iter", help="Number of reclustering iterations")
+    ] = 3,
+    extra_threshold: Annotated[
+        float, Option("--extra-threshold", help="Extra threshold for refinement")
+    ] = 0.025,
+    n_features: Annotated[
+        int | None,
+        Option(
+            "--n-features",
+            help="Number of features in fingerprints (only if not multiple of 8)",
+            rich_help_panel="Advanced",
+        ),
+    ] = None,
+    input_is_packed: Annotated[
+        bool,
+        Option(
+            "--packed-input/--unpacked-input",
+            help="Toggle whether input is packed or unpacked fingerprints",
+            rich_help_panel="Advanced",
+        ),
+    ] = True,
+    num_midsection_rounds: Annotated[
+        int,
+        Option("--num-mid-rounds", help="Number of midsection rounds", rich_help_panel="Advanced"),
+    ] = 1,
+    bin_size: Annotated[
+        int, Option("--bin-size", help="Bin size for chunking", rich_help_panel="Advanced")
+    ] = 10,
+    max_tasks_per_process: Annotated[
+        int, Option("--max-tasks-per-process", help="Max tasks per process", rich_help_panel="Advanced")
+    ] = 1,
+    save_tree: Annotated[
+        bool,
+        Option("--save-tree/--no-save-tree", help="Save tree structure", rich_help_panel="Advanced"),
+    ] = False,
+    save_centroids: Annotated[
+        bool,
+        Option("--save-centroids/--no-save-centroids", help="Save centroids", rich_help_panel="Advanced"),
+    ] = False,
+    fork: Annotated[
+        bool,
+        Option(help="Force 'fork' multiprocessing on Linux", rich_help_panel="Advanced"),
+    ] = False,
+    max_fps: Annotated[
+        int | None,
+        Option("--max-fps", help="Max fps to load per file", rich_help_panel="Debug", hidden=True),
+    ] = None,
+    verbose: Annotated[
+        bool,
+        Option("-v/-V", "--verbose/--no-verbose", help="Verbose output"),
+    ] = True,
+    cleanup: Annotated[
+        bool,
+        Option("--cleanup/--no-cleanup", help="Cleanup intermediate files", hidden=True),
+    ] = True,
+    monitor_rss: Annotated[
+        bool,
+        Option(
+            "--monitor-mem/--no-monitor-mem",
+            help="Monitor RAM used by all processes",
+            rich_help_panel="Advanced",
+        ),
+    ] = True,
+    monitor_rss_interval_s: Annotated[
+        float,
+        Option(
+            "--monitor-mem-seconds",
+            help="Interval in seconds for RAM monitoring",
+            rich_help_panel="Debug",
+            hidden=True,
+        ),
+    ] = 1.0,
+    reweight_centroids: Annotated[
+        bool,
+        Option(
+            "--reweight-centroids/--no-reweight-centroids",
+            help="Reweight centroids based on cluster sizes for improved quality",
+            rich_help_panel="Advanced",
+        ),
+    ] = False,
+) -> None:
+    r"""Run multi-round BitBIRCH clustering using centroids (efficient for large datasets)"""
+    from bblean._console import get_console
+    from bblean.multiround_centroids import run_multiround_centroids
+    from bblean.fingerprints import _get_fps_file_num
+
+    console = get_console(silent=not verbose)
+
+    # Set multiprocessing start method
+    if fork and not sys.platform == "linux":
+        console.print("'fork' is only available on Linux", style="red")
+        raise Abort()
+    if sys.platform == "linux":
+        mp_context = mp.get_context("fork" if fork else "forkserver")
+    else:
+        mp_context = mp.get_context()
+
+    # Collect inputs
+    if in_dir is None:
+        in_dir = Path.cwd() / "bb_inputs"
+    _validate_input_dir(in_dir)
+    input_files = sorted(
+        f for f in in_dir.glob("*.npy") if not f.stem.endswith(".indices")
+    )
+    ctx.params["input_files"] = [str(p.resolve()) for p in input_files]
+    ctx.params["num_fps"] = [_get_fps_file_num(p) for p in input_files]
+    if max_fps is not None:
+        ctx.params["num_fps_loaded"] = [min(n, max_fps) for n in ctx.params["num_fps"]]
+    else:
+        ctx.params["num_fps_loaded"] = ctx.params["num_fps"]
+
+    # Set up outputs
+    unique_id = format(random.getrandbits(32), "08x")
+    if out_dir is None:
+        out_dir = Path.cwd() / "bb_multiround_outputs" / unique_id
+    out_dir.mkdir(exist_ok=True, parents=True)
+    _validate_output_dir(out_dir, overwrite)
+    ctx.params["out_dir"] = str(out_dir.resolve())
+
+    console.print_banner()
+    console.print()
+    console.print(f"[bold]Multi-round Centroids Clustering[/bold]")
+    console.print(f"  Processes (initial): {num_initial_processes}")
+    console.print(f"  Branching factor: {branching_factor}")
+    console.print(f"  Threshold: {threshold}")
+    console.print(f"  Merge criterion: {merge_criterion}")
+    console.print(f"  Output dir: {out_dir}")
+
+    # Optionally start a separate process that tracks RAM usage
+    if monitor_rss:
+        launch_monitor_rss_daemon(out_dir / "monitor-rss.csv", monitor_rss_interval_s)
+
+    # Run the clustering
+    timer = run_multiround_centroids(
+        input_files=input_files,
+        out_dir=out_dir,
+        n_features=n_features,
+        input_is_packed=input_is_packed,
+        num_initial_processes=num_initial_processes,
+        num_midsection_processes=num_midsection_processes,
+        merge_criterion=merge_criterion,
+        branching_factor=branching_factor,
+        threshold=threshold,
+        midsection_threshold_change=midsection_threshold_change,
+        reclustering_iterations=reclustering_iterations,
+        extra_threshold=extra_threshold,
+        reweight_centroids=reweight_centroids,
+        num_midsection_rounds=num_midsection_rounds,
+        bin_size=bin_size,
+        max_tasks_per_process=max_tasks_per_process,
+        mp_context=mp_context,
+        save_tree=save_tree,
+        save_centroids=save_centroids,
+        max_fps=max_fps,
+        verbose=verbose,
+        cleanup=cleanup,
+    )
+    timer.dump(out_dir / "timings.json")
+    collect_system_specs_and_dump_config(ctx.params)
+
+    console.print(f"\n[green]✓[/green] Clustering complete. Output: {out_dir}")
+
+
+@app.command("multiround-reclustering")
+def _multiround_reclustering(
+    ctx: Context,
+    in_dir: Annotated[
+        Path | None,
+        Argument(help="Directory with input `*.npy` files with packed fingerprints"),
+    ] = None,
+    out_dir: Annotated[
+        Path | None,
+        Option("-o", "--out-dir", help="Dir for output files"),
+    ] = None,
+    overwrite: Annotated[bool, Option(help="Allow overwriting output files")] = False,
+    num_initial_processes: Annotated[
+        int, Option("--ps", "--processes", help="Num. processes for first round")
+    ] = 10,
+    num_midsection_processes: Annotated[
+        int | None,
+        Option(
+            "--mid-ps",
+            "--mid-processes",
+            help="Num. processes for middle section rounds",
+        ),
+    ] = None,
+    branching_factor: Annotated[
+        int,
+        Option("--branching", "-b", help="BitBIRCH branching factor"),
+    ] = DEFAULTS.branching_factor,
+    threshold: Annotated[
+        float,
+        Option("--threshold", "-t", help="Threshold for merge criterion"),
+    ] = DEFAULTS.threshold,
+    merge_criterion: Annotated[
+        str,
+        Option("-m", "--merge", help="Merge criterion (e.g., 'diameter')"),
+    ] = DEFAULTS.merge_criterion,
+    midsection_threshold_change: Annotated[
+        float,
+        Option("--mid-threshold-change", help="Threshold change for refinement"),
+    ] = 0.0,
+    reclustering_iterations_initial: Annotated[
+        int,
+        Option("--recluster_iter_init", help="Number of reclustering iterations for initial round"),
+    ] = 3,
+    reclustering_iterations_midsection: Annotated[
+        int,
+        Option("--recluster_iter_mid", help="Number of reclustering iterations for midsection rounds"),
+    ] = 0,
+    reclustering_iterations_final: Annotated[
+        int,
+        Option("--recluster_iter_final", help="Number of reclustering iterations for final round"),
+    ] = 0,
+    reclustering_extra_threshold: Annotated[
+        float, Option("--recluster_extra_t", help="Extra threshold for reclustering")
+    ] = 0.025,
+    n_features: Annotated[
+        int | None,
+        Option(
+            "--n-features",
+            help="Number of features in fingerprints (only if not multiple of 8)",
+            rich_help_panel="Advanced",
+        ),
+    ] = None,
+    input_is_packed: Annotated[
+        bool,
+        Option(
+            "--packed-input/--unpacked-input",
+            help="Toggle whether input is packed or unpacked fingerprints",
+            rich_help_panel="Advanced",
+        ),
+    ] = True,
+    num_midsection_rounds: Annotated[
+        int,
+        Option("--num-mid-rounds", help="Number of midsection rounds", rich_help_panel="Advanced"),
+    ] = 1,
+    bin_size: Annotated[
+        int, Option("--bin-size", help="Bin size for chunking", rich_help_panel="Advanced")
+    ] = 10,
+    max_tasks_per_process: Annotated[
+        int, Option("--max-tasks-per-process", help="Max tasks per process", rich_help_panel="Advanced")
+    ] = 1,
+    save_tree: Annotated[
+        bool,
+        Option("--save-tree/--no-save-tree", help="Save tree structure", rich_help_panel="Advanced"),
+    ] = False,
+    save_centroids: Annotated[
+        bool,
+        Option("--save-centroids/--no-save-centroids", help="Save centroids", rich_help_panel="Advanced"),
+    ] = False,
+    fork: Annotated[
+        bool,
+        Option(help="Force 'fork' multiprocessing on Linux", rich_help_panel="Advanced"),
+    ] = False,
+    max_fps: Annotated[
+        int | None,
+        Option("--max-fps", help="Max fps to load per file", rich_help_panel="Debug", hidden=True),
+    ] = None,
+    verbose: Annotated[
+        bool,
+        Option("-v/-V", "--verbose/--no-verbose", help="Verbose output"),
+    ] = True,
+    cleanup: Annotated[
+        bool,
+        Option("--cleanup/--no-cleanup", help="Cleanup intermediate files", hidden=True),
+    ] = True,
+    monitor_rss: Annotated[
+        bool,
+        Option(
+            "--monitor-mem/--no-monitor-mem",
+            help="Monitor RAM used by all processes",
+            rich_help_panel="Advanced",
+        ),
+    ] = True,
+    monitor_rss_interval_s: Annotated[
+        float,
+        Option(
+            "--monitor-mem-seconds",
+            help="Interval in seconds for RAM monitoring",
+            rich_help_panel="Debug",
+            hidden=True,
+        ),
+    ] = 1.0,
+) -> None:
+    r"""Run multi-round BitBIRCH clustering with reclustering refinement (efficient for large datasets)"""
+    import importlib
+    from bblean._console import get_console
+    from bblean.fingerprints import _get_fps_file_num
+
+    # Import module with space in name using importlib
+    multiround_reclustering_module = importlib.import_module("bblean.multiround _recluster")
+    run_multiround_reclustering = multiround_reclustering_module.run_multiround_reclustering
+
+    console = get_console(silent=not verbose)
+
+    # Set multiprocessing start method
+    if fork and not sys.platform == "linux":
+        console.print("'fork' is only available on Linux", style="red")
+        raise Abort()
+    if sys.platform == "linux":
+        mp_context = mp.get_context("fork" if fork else "forkserver")
+    else:
+        mp_context = mp.get_context()
+
+    # Collect inputs
+    if in_dir is None:
+        in_dir = Path.cwd() / "bb_inputs"
+    _validate_input_dir(in_dir)
+    input_files = sorted(
+        f for f in in_dir.glob("*.npy") if not f.stem.endswith(".indices")
+    )
+    ctx.params["input_files"] = [str(p.resolve()) for p in input_files]
+    ctx.params["num_fps"] = [_get_fps_file_num(p) for p in input_files]
+    if max_fps is not None:
+        ctx.params["num_fps_loaded"] = [min(n, max_fps) for n in ctx.params["num_fps"]]
+    else:
+        ctx.params["num_fps_loaded"] = ctx.params["num_fps"]
+
+    # Set up outputs
+    unique_id = format(random.getrandbits(32), "08x")
+    if out_dir is None:
+        out_dir = Path.cwd() / "bb_multiround_outputs" / unique_id
+    out_dir.mkdir(exist_ok=True, parents=True)
+    _validate_output_dir(out_dir, overwrite)
+    ctx.params["out_dir"] = str(out_dir.resolve())
+
+    console.print_banner()
+    console.print()
+    console.print(f"[bold]Multi-round Reclustering Clustering[/bold]")
+    console.print(f"  Processes (initial): {num_initial_processes}")
+    console.print(f"  Branching factor: {branching_factor}")
+    console.print(f"  Threshold: {threshold}")
+    console.print(f"  Merge criterion: {merge_criterion}")
+    console.print(f"  Output dir: {out_dir}")
+
+    # Optionally start a separate process that tracks RAM usage
+    if monitor_rss:
+        launch_monitor_rss_daemon(out_dir / "monitor-rss.csv", monitor_rss_interval_s)
+
+    # Run the clustering
+    timer = run_multiround_reclustering(
+        input_files=input_files,
+        out_dir=out_dir,
+        n_features=n_features,
+        input_is_packed=input_is_packed,
+        num_initial_processes=num_initial_processes,
+        num_midsection_processes=num_midsection_processes,
+        merge_criterion=merge_criterion,
+        branching_factor=branching_factor,
+        threshold=threshold,
+        midsection_threshold_change=midsection_threshold_change,
+        reclustering_iterations_initial=reclustering_iterations_initial,
+        reclustering_iterations_midsection=reclustering_iterations_midsection,
+        reclustering_iterations_final=reclustering_iterations_final,
+        reclustering_extra_threshold=reclustering_extra_threshold,
+        num_midsection_rounds=num_midsection_rounds,
+        bin_size=bin_size,
+        max_tasks_per_process=max_tasks_per_process,
+        mp_context=mp_context,
+        save_tree=save_tree,
+        save_centroids=save_centroids,
+        max_fps=max_fps,
+        verbose=verbose,
+        cleanup=cleanup,
+    )
+    timer.dump(out_dir / "timings.json")
+    collect_system_specs_and_dump_config(ctx.params)
+
+    console.print(f"\n[green]✓[/green] Clustering complete. Output: {out_dir}")
+
 
 @app.command("fps-info", rich_help_panel="Fingerprints")
 def _fps_info(
