@@ -1834,17 +1834,9 @@ def _multiround_reclustering(
 
     This is efficient for large datasets.
     """
-    import importlib
     from bblean._console import get_console
     from bblean.fingerprints import _get_fps_file_num
-
-    # Import module with space in name using importlib
-    multiround_reclustering_module = importlib.import_module(
-        "bblean.multiround _recluster"
-    )
-    run_multiround_reclustering = (
-        multiround_reclustering_module.run_multiround_reclustering
-    )
+    from bblean.multiround_recluster import run_multiround_reclustering
 
     console = get_console(silent=not verbose)
 
