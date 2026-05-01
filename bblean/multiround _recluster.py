@@ -155,6 +155,7 @@ class _InitialRound:
         max_fps: int | None = None,
         merge_criterion: str = "diameter",
         input_is_packed: bool = True,
+        verbose: bool = False,
     ) -> None:
         self.branching_factor = branching_factor
         self.threshold = threshold
@@ -165,6 +166,7 @@ class _InitialRound:
         self.input_is_packed = input_is_packed
         self.reclustering_iterations = reclustering_iterations
         self.extra_threshold = extra_threshold
+        self.verbose = verbose
 
     def __call__(self, file_info: tuple[str, Path, int, int]) -> None:
         file_label, fp_file, start_idx, end_idx = file_info
@@ -191,6 +193,7 @@ class _InitialRound:
             tree.recluster_inplace(
                 iterations=self.reclustering_iterations,
                 extra_threshold=self.extra_threshold,
+                verbose=self.verbose,
             )
 
         # Release memory before getting the buffers and mol idxs for the next round
@@ -212,6 +215,7 @@ class _TreeMergingRound:
         reclustering_iterations: int,
         extra_threshold: float,
         all_fp_paths: tp.Sequence[Path] = (),
+        verbose: bool = False,
     ) -> None:
         self.all_fp_paths = list(all_fp_paths)
         self.branching_factor = branching_factor
@@ -221,6 +225,7 @@ class _TreeMergingRound:
         self.merge_criterion = merge_criterion
         self.reclustering_iterations = reclustering_iterations
         self.extra_threshold = extra_threshold
+        self.verbose = verbose
 
     def __call__(self, batch_info: tuple[str, tp.Sequence[tuple[Path, Path]]]) -> None:
         # Get BF information from saved files
@@ -245,6 +250,7 @@ class _TreeMergingRound:
             tree.recluster_inplace(
                 iterations=self.reclustering_iterations,
                 extra_threshold=self.extra_threshold,
+                verbose=self.verbose,
             )
 
         # Release memory before save the round's BFs
@@ -268,6 +274,7 @@ class _FinalTreeMergingRound:
         save_centroids: bool,
         reclustering_iterations: int,
         extra_threshold: float = 0.025,
+        verbose: bool = False,
     ) -> None:
         self.branching_factor = branching_factor
         self.threshold = threshold
@@ -276,7 +283,8 @@ class _FinalTreeMergingRound:
         self.save_tree = save_tree
         self.save_centroids = save_centroids
         self.reclustering_iterations = reclustering_iterations
-        self.extra_threshold = extra_threshold
+        self.extra_threshold = extra_threshold,
+        self.verbose = verbose
 
     def __call__(self, batch_info: tuple[str, tp.Sequence[tuple[Path, Path]]]) -> None:
         # Get the batch BF information
@@ -301,6 +309,7 @@ class _FinalTreeMergingRound:
             tree.recluster_inplace(
                 iterations=self.reclustering_iterations,
                 extra_threshold=self.extra_threshold,
+                verbose=self.verbose,
             )
 
         # Save outputs and exit
@@ -403,6 +412,7 @@ def run_multiround_reclustering(
         n_features=n_features,
         merge_criterion=merge_criterion,
         input_is_packed=input_is_packed,
+        verbose=verbose,
     )
     num_ps = min(num_initial_processes, num_files)
     console.print(f"    - Processing {num_files} inputs with {num_ps} processes")
@@ -436,6 +446,7 @@ def run_multiround_reclustering(
             reclustering_iterations=reclustering_iterations_midsection,
             extra_threshold=reclustering_extra_threshold,
             all_fp_paths=input_files,
+            verbose=verbose,
         )
         num_ps = min(num_midsection_processes, len(batches))
         console.print(f"    - Processing {len(batches)} inputs with {num_ps} processes")
@@ -467,6 +478,7 @@ def run_multiround_reclustering(
         save_centroids=save_centroids,
         reclustering_iterations=reclustering_iterations_final,
         extra_threshold=reclustering_extra_threshold,
+        verbose=verbose,
     )
     with console.status("[italic]BitBirching...[/italic]", spinner="dots"):
         final_fn(("", file_pairs))
