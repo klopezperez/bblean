@@ -1761,7 +1761,7 @@ def _multiround_reclustering(
     ] = 1,
     bin_sizes: Annotated[
         tp.Sequence[int],
-        Option("--bin-sizes", help="Bin sizes for chunking", rich_help_panel="Advanced"),
+        Option("--bin-sizes", help="Bin sizes", rich_help_panel="Advanced"),
     ] = (10,),
     max_tasks_per_process: Annotated[
         int,
