@@ -357,7 +357,7 @@ def run_multiround_reclustering(
     midsection_threshold_change: float = 0.0,
     # Advanced
     num_midsection_rounds: int = 1,
-    bin_size: int = 10,
+    bin_sizes: tp.Sequence[int] = (10,),
     max_tasks_per_process: int = 1,
     mp_context: tp.Any = None,
     save_tree: bool = False,
@@ -429,14 +429,19 @@ def run_multiround_reclustering(
     timer.end_timing(f"round-{round_idx}", console)
     console.print_peak_mem(out_dir)
 
+    if len(bin_sizes) != num_midsection_rounds:
+        raise ValueError(
+            "The number of bin sizes must match the number of midsection rounds"
+        )
+
     # Mid-section "Tree-Merging" rounds of clustering
-    for _ in range(num_midsection_rounds):
+    for _, bs in zip(range(num_midsection_rounds), bin_sizes):
         round_idx += 1
         timer.init_timing(f"round-{round_idx}")
         console.print(f"(Midsection) Round {round_idx}: Re-clustering in chunks")
 
         file_pairs = _get_prev_round_buf_and_mol_idxs_files(out_dir, round_idx, console)
-        batches = _chunk_file_pairs_in_batches(file_pairs, bin_size, console)
+        batches = _chunk_file_pairs_in_batches(file_pairs, bs, console)
         merging_fn = _TreeMergingRound(
             branching_factor=branching_factor,
             threshold=threshold + midsection_threshold_change,

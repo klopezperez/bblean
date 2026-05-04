@@ -1759,10 +1759,10 @@ def _multiround_reclustering(
             rich_help_panel="Advanced",
         ),
     ] = 1,
-    bin_size: Annotated[
-        int,
-        Option("--bin-size", help="Bin size for chunking", rich_help_panel="Advanced"),
-    ] = 10,
+    bin_sizes: Annotated[
+        tp.Sequence[int],
+        Option("--bin-sizes", help="Bin sizes for chunking", rich_help_panel="Advanced"),
+    ] = (10,),
     max_tasks_per_process: Annotated[
         int,
         Option(
@@ -1901,7 +1901,7 @@ def _multiround_reclustering(
         reclustering_iterations_final=reclustering_iterations_final,
         reclustering_extra_threshold=reclustering_extra_threshold,
         num_midsection_rounds=num_midsection_rounds,
-        bin_size=bin_size,
+        bin_sizes=bin_sizes,
         max_tasks_per_process=max_tasks_per_process,
         mp_context=mp_context,
         save_tree=save_tree,
