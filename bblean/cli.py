@@ -1806,7 +1806,9 @@ def _multiround_reclustering(
         bool, Option("-v/-V", "--verbose/--no-verbose", help="Verbose output")
     ] = True,
     shuffle: Annotated[
-        bool, Option("--shuffle/--no-shuffle", help="Shuffle", rich_help_panel="Advanced")
+        bool, Option("--shuffle/--no-shuffle",
+                     help="Shuffle",
+                     rich_help_panel="Advanced")
     ] = False,
     shuffle_reclustering: Annotated[
         bool, Option("--r-shuffle/--no-r-shuffle",

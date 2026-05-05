@@ -172,6 +172,7 @@ class _InitialRound:
         self.extra_threshold = extra_threshold
         self.verbose = verbose
         self.shuffle = shuffle
+
     def __call__(self, file_info: tuple[str, Path, int, int]) -> None:
         file_label, fp_file, start_idx, end_idx = file_info
 
@@ -454,7 +455,10 @@ def run_multiround_reclustering(
         timer.init_timing(f"round-{round_idx}")
         console.print(f"(Midsection) Round {round_idx}: Re-clustering in chunks")
 
-        file_pairs = _get_prev_round_buf_and_mol_idxs_files(out_dir, round_idx, console, shuffle=shuffle)
+        file_pairs = _get_prev_round_buf_and_mol_idxs_files(out_dir,
+                                                            round_idx,
+                                                            console,
+                                                            shuffle=shuffle)
         batches = _chunk_file_pairs_in_batches(file_pairs, bs, console)
         merging_fn = _TreeMergingRound(
             branching_factor=branching_factor,
@@ -482,7 +486,7 @@ def run_multiround_reclustering(
 
         timer.end_timing(f"round-{round_idx}", console)
         console.print_peak_mem(out_dir)
-        
+
         # Clean up files from 2 rounds back to free disk space
         cleanup_round = round_idx - 2
         if cleanup_round >= 1:
@@ -497,7 +501,10 @@ def run_multiround_reclustering(
     round_idx += 1
     timer.init_timing(f"round-{round_idx}")
     console.print(f"(Final) Round {round_idx}: Final round of clustering")
-    file_pairs = _get_prev_round_buf_and_mol_idxs_files(out_dir, round_idx, console, shuffle=shuffle)
+    file_pairs = _get_prev_round_buf_and_mol_idxs_files(out_dir,
+                                                        round_idx,
+                                                        console,
+                                                        shuffle=shuffle)
 
     final_fn = _FinalTreeMergingRound(
         branching_factor=branching_factor,
