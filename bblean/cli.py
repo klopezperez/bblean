@@ -1805,6 +1805,14 @@ def _multiround_reclustering(
     verbose: Annotated[
         bool, Option("-v/-V", "--verbose/--no-verbose", help="Verbose output")
     ] = True,
+    shuffle: Annotated[
+        bool, Option("--shuffle/--no-shuffle", help="Shuffle", rich_help_panel="Advanced")
+    ] = False,
+    shuffle_reclustering: Annotated[
+        bool, Option("--r-shuffle/--no-r-shuffle",
+                     help="Shuffle reclustering",
+                     rich_help_panel="Advanced")
+    ] = False,
     cleanup: Annotated[
         bool,
         Option(
@@ -1909,6 +1917,8 @@ def _multiround_reclustering(
         max_fps=max_fps,
         verbose=verbose,
         cleanup=cleanup,
+        shuffle=shuffle,
+        shuffle_reclustering=shuffle_reclustering,
     )
     timer.dump(out_dir / "timings.json")
     collect_system_specs_and_dump_config(ctx.params)

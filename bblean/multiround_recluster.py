@@ -89,16 +89,19 @@ def _numpy_streaming_save(
 # Glob and sort by uint bits and label, if a console is passed then the number of output
 # files is printed
 def _get_prev_round_buf_and_mol_idxs_files(
-    path: Path, round_idx: int, console: Console | None = None
+    path: Path, round_idx: int, console: Console | None = None, shuffle: bool = False
 ) -> list[tuple[Path, Path]]:
     path = Path(path)
     # TODO: Important: What should be the logic for batching? currently there doesn't
     # seem to be much logic for grouping the files
     buf_files = sorted(path.glob(f"round-{round_idx - 1}-bufs*.npy"))
     idx_files = sorted(path.glob(f"round-{round_idx - 1}-idxs*.pkl"))
+    pairs = list(zip(buf_files, idx_files))
+    if shuffle:
+        np.random.shuffle(pairs)
     if console is not None:
-        console.print(f"    - Collected {len(buf_files)} buffer-index file pairs")
-    return list(zip(buf_files, idx_files))
+        console.print(f"    - Collected {len(pairs)} buffer-index file pairs")
+    return pairs
 
 
 def _sort_batch(b: tp.Sequence[tuple[Path, Path]]) -> tuple[tuple[Path, Path], ...]:
@@ -156,6 +159,7 @@ class _InitialRound:
         merge_criterion: str = "diameter",
         input_is_packed: bool = True,
         verbose: bool = False,
+        shuffle: bool = False,
     ) -> None:
         self.branching_factor = branching_factor
         self.threshold = threshold
@@ -167,7 +171,7 @@ class _InitialRound:
         self.reclustering_iterations = reclustering_iterations
         self.extra_threshold = extra_threshold
         self.verbose = verbose
-
+        self.shuffle = shuffle
     def __call__(self, file_info: tuple[str, Path, int, int]) -> None:
         file_label, fp_file, start_idx, end_idx = file_info
 
@@ -194,6 +198,7 @@ class _InitialRound:
                 iterations=self.reclustering_iterations,
                 extra_threshold=self.extra_threshold,
                 verbose=self.verbose,
+                shuffle=self.shuffle,
             )
 
         # Release memory before getting the buffers and mol idxs for the next round
@@ -216,6 +221,7 @@ class _TreeMergingRound:
         extra_threshold: float,
         all_fp_paths: tp.Sequence[Path] = (),
         verbose: bool = False,
+        shuffle: bool = False,
     ) -> None:
         self.all_fp_paths = list(all_fp_paths)
         self.branching_factor = branching_factor
@@ -226,6 +232,7 @@ class _TreeMergingRound:
         self.reclustering_iterations = reclustering_iterations
         self.extra_threshold = extra_threshold
         self.verbose = verbose
+        self.shuffle = shuffle
 
     def __call__(self, batch_info: tuple[str, tp.Sequence[tuple[Path, Path]]]) -> None:
         # Get BF information from saved files
@@ -251,6 +258,7 @@ class _TreeMergingRound:
                 iterations=self.reclustering_iterations,
                 extra_threshold=self.extra_threshold,
                 verbose=self.verbose,
+                shuffle=self.shuffle,
             )
 
         # Release memory before save the round's BFs
@@ -275,6 +283,7 @@ class _FinalTreeMergingRound:
         reclustering_iterations: int,
         extra_threshold: float = 0.025,
         verbose: bool = False,
+        shuffle: bool = False,
     ) -> None:
         self.branching_factor = branching_factor
         self.threshold = threshold
@@ -285,6 +294,7 @@ class _FinalTreeMergingRound:
         self.reclustering_iterations = reclustering_iterations
         self.extra_threshold = extra_threshold
         self.verbose = verbose
+        self.shuffle = shuffle
 
     def __call__(self, batch_info: tuple[str, tp.Sequence[tuple[Path, Path]]]) -> None:
         # Get the batch BF information
@@ -310,6 +320,7 @@ class _FinalTreeMergingRound:
                 iterations=self.reclustering_iterations,
                 extra_threshold=self.extra_threshold,
                 verbose=self.verbose,
+                shuffle=self.shuffle,
             )
 
         # Save outputs and exit
@@ -366,6 +377,8 @@ def run_multiround_reclustering(
     reclustering_iterations_midsection: int = 0,
     reclustering_iterations_final: int = 0,
     reclustering_extra_threshold: float = 0.025,
+    shuffle: bool = False,
+    shuffle_reclustering: bool = False,
     # Debug
     max_fps: int | None = None,
     verbose: bool = False,
@@ -413,6 +426,7 @@ def run_multiround_reclustering(
         merge_criterion=merge_criterion,
         input_is_packed=input_is_packed,
         verbose=verbose,
+        shuffle=shuffle_reclustering,
     )
     num_ps = min(num_initial_processes, num_files)
     console.print(f"    - Processing {num_files} inputs with {num_ps} processes")
@@ -440,7 +454,7 @@ def run_multiround_reclustering(
         timer.init_timing(f"round-{round_idx}")
         console.print(f"(Midsection) Round {round_idx}: Re-clustering in chunks")
 
-        file_pairs = _get_prev_round_buf_and_mol_idxs_files(out_dir, round_idx, console)
+        file_pairs = _get_prev_round_buf_and_mol_idxs_files(out_dir, round_idx, console, shuffle=shuffle)
         batches = _chunk_file_pairs_in_batches(file_pairs, bs, console)
         merging_fn = _TreeMergingRound(
             branching_factor=branching_factor,
@@ -452,6 +466,7 @@ def run_multiround_reclustering(
             extra_threshold=reclustering_extra_threshold,
             all_fp_paths=input_files,
             verbose=verbose,
+            shuffle=shuffle_reclustering,
         )
         num_ps = min(num_midsection_processes, len(batches))
         console.print(f"    - Processing {len(batches)} inputs with {num_ps} processes")
@@ -467,12 +482,22 @@ def run_multiround_reclustering(
 
         timer.end_timing(f"round-{round_idx}", console)
         console.print_peak_mem(out_dir)
+        
+        # Clean up files from 2 rounds back to free disk space
+        cleanup_round = round_idx - 2
+        if cleanup_round >= 1:
+            for f in out_dir.glob(f"round-{cleanup_round}-bufs*.npy"):
+                f.unlink()
+            for f in out_dir.glob(f"round-{cleanup_round}-idxs*.pkl"):
+                f.unlink()
+            if console is not None:
+                console.print(f"    - Cleaned up round-{cleanup_round} files")
 
     # Final "Tree-Merging" round of clustering
     round_idx += 1
     timer.init_timing(f"round-{round_idx}")
     console.print(f"(Final) Round {round_idx}: Final round of clustering")
-    file_pairs = _get_prev_round_buf_and_mol_idxs_files(out_dir, round_idx, console)
+    file_pairs = _get_prev_round_buf_and_mol_idxs_files(out_dir, round_idx, console, shuffle=shuffle)
 
     final_fn = _FinalTreeMergingRound(
         branching_factor=branching_factor,
@@ -484,6 +509,7 @@ def run_multiround_reclustering(
         reclustering_iterations=reclustering_iterations_final,
         extra_threshold=reclustering_extra_threshold,
         verbose=verbose,
+        shuffle=shuffle_reclustering,
     )
     with console.status("[italic]BitBirching...[/italic]", spinner="dots"):
         final_fn(("", file_pairs))
