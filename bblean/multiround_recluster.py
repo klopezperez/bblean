@@ -357,7 +357,7 @@ def run_multiround_reclustering(
     midsection_threshold_change: float = 0.0,
     # Advanced
     num_midsection_rounds: int = 1,
-    bin_sizes: tp.Sequence[int] = (10,),
+    bin_sizes: list[int] = [10],
     max_tasks_per_process: int = 1,
     mp_context: tp.Any = None,
     save_tree: bool = False,
