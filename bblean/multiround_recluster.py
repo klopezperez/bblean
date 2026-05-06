@@ -457,6 +457,8 @@ def run_multiround_reclustering(
     )
     num_ps = min(num_initial_processes, num_files)
     console.print(f"    - Processing {num_files} inputs with {num_ps} processes")
+    if init_batch_size is not None:
+        console.print(f"    - Processing files in {len(files_range_tuples)} batches")
     with console.status("[italic]BitBirching...[/italic]", spinner="dots"):
         if num_ps == 1:
             for tup in files_range_tuples:
