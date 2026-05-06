@@ -173,8 +173,15 @@ class _InitialRound:
         self.verbose = verbose
         self.shuffle = shuffle
 
-    def __call__(self, file_info: tuple[str, Path, int, int]) -> None:
-        file_label, fp_file, start_idx, end_idx = file_info
+    def __call__(
+        self,
+        file_info: tuple[str, Path, int, int]
+        | tuple[tuple[str, Path, int, int], ...],
+    ) -> None:
+        if file_info and isinstance(file_info[0], tuple):
+            file_infos = file_info
+        else:
+            file_infos = (tp.cast(tuple[str, Path, int, int], file_info),)
 
         # Create the tree instance
         tree = BitBirch(
@@ -183,15 +190,16 @@ class _InitialRound:
             merge_criterion=self.merge_criterion,
         )
 
-        # Fit the fingerprints initially
-        range_ = range(start_idx, end_idx)
-        tree.fit(
-            fp_file,
-            reinsert_indices=range_,
-            n_features=self.n_features,
-            input_is_packed=self.input_is_packed,
-            max_fps=self.max_fps,
-        )
+        for file_label, fp_file, start_idx, end_idx in file_infos:
+            # Fit the fingerprints initially
+            range_ = range(start_idx, end_idx)
+            tree.fit(
+                fp_file,
+                reinsert_indices=range_,
+                n_features=self.n_features,
+                input_is_packed=self.input_is_packed,
+                max_fps=self.max_fps,
+            )
 
         # Recluster in place to reduce the number of clusters
         if self.reclustering_iterations > 0:
@@ -207,6 +215,9 @@ class _InitialRound:
 
         # Save the bfs and mol_ids
         fps_bfs, mols_bfs = tree._bf_to_np()
+
+        # Use the first file label to save
+        file_label = file_infos[0][0]
         _save_bufs_and_mol_idxs(self.out_dir, fps_bfs, mols_bfs, file_label, 1)
 
 
@@ -380,6 +391,7 @@ def run_multiround_reclustering(
     reclustering_extra_threshold: float = 0.025,
     shuffle: bool = False,
     shuffle_reclustering: bool = False,
+    init_batch_size: int | None = None,
     # Debug
     max_fps: int | None = None,
     verbose: bool = False,
@@ -409,8 +421,22 @@ def run_multiround_reclustering(
     timer.init_timing("total")
 
     # Get starting and ending idxs for each file, and collect them into tuples
-    files_range_tuples = _get_files_range_tuples(input_files)  # correct
+    files_range_tuples: (
+        list[tuple[str, Path, int, int]]
+        | list[tuple[tuple[str, Path, int, int], ...]]
+    ) = _get_files_range_tuples(input_files)
     num_files = len(input_files)
+
+    if shuffle:
+        np.random.shuffle(files_range_tuples)
+
+    if init_batch_size is not None:
+        if init_batch_size <= 0:
+            raise ValueError("init_batch_size must be > 0")
+        files_range_tuples = [
+            tuple(batch)
+            for batch in batched(files_range_tuples, init_batch_size)
+        ]
 
     # Initial round of clustering
     round_idx = 1

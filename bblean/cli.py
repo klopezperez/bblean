@@ -1763,6 +1763,14 @@ def _multiround_reclustering(
         list[int],
         Option("--bin-sizes", help="Bin sizes", rich_help_panel="Advanced"),
     ] = [10],
+    init_bin_size: Annotated[
+        int,
+        Option(
+            "--init-bin-size",
+            help="Bin size for initial round (overrides --bin-sizes)",
+            rich_help_panel="Advanced",
+        ),
+    ] = None,
     max_tasks_per_process: Annotated[
         int,
         Option(
@@ -1921,6 +1929,7 @@ def _multiround_reclustering(
         cleanup=cleanup,
         shuffle=shuffle,
         shuffle_reclustering=shuffle_reclustering,
+        init_batch_size=init_bin_size,
     )
     timer.dump(out_dir / "timings.json")
     collect_system_specs_and_dump_config(ctx.params)
